@@ -13,40 +13,37 @@ class CalendarPage extends ConsumerWidget {
     final activitiesStream = ref.watch(activitiesStreamProvider);
     return  activitiesStream.when(
       data: (data)=>SafeArea(
-        child: Scaffold(
-          body: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20.0),
-                child: Text("Tareas",style: GoogleFonts.quicksand(
-                  textStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 30,
-                  ),
-                ),),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  padding: EdgeInsets.all(20),
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 10),
-                      child: TaskCard(
-                        title: data[index].name ?? '',
-                        description:
-                        data[index].description ?? '',
-                        time: data[index].time.toString() ??
-                            '0',
-                        completed: false,
-                      ),
-                    );
-                  },
-                  itemCount: data.length,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20.0),
+              child: Text("Tareas",style: GoogleFonts.quicksand(
+                textStyle: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 30,
                 ),
+              ),),
+            ),
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.all(20),
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10),
+                    child: TaskCard(
+                      title: data[index].name ?? '',
+                      description:
+                      data[index].description ?? '',
+                      time: data[index].time??'',
+                      completed: false,
+                    ),
+                  );
+                },
+                itemCount: data.length,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
         error: (error, stack) {

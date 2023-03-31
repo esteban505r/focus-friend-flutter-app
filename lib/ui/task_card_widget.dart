@@ -78,28 +78,34 @@ class _TaskCardState extends State<TaskCard> {
                   ),
                   const SizedBox(height: 5),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.blueAccent.shade100,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.access_time,
                           color: Colors.white,
                           size: 16,
                         ),
-                        SizedBox(width: 5),
-                        Text(
-                          DateFormat('hh:mm a')
-                              .format(DateTime(0, 0,0, int.parse(widget.time))),
-                          style: GoogleFonts.quicksand(
-                            textStyle: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white,
-                            ),
-                          ),
+                        const SizedBox(width: 5),
+                        Builder(
+                          builder: (context) {
+                            var now = DateTime.now();
+                            var hora = int.parse(widget.time.split(':')[0]);
+                            var minutos = int.parse(widget.time.split(':')[1]);
+                            return Text(
+                              DateFormat('hh:mm a').format(DateTime(now.year,now.month,now.day,hora,minutos)),
+                              style: GoogleFonts.quicksand(
+                                textStyle: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            );
+                          }
                         ),
                       ],
                     ),
