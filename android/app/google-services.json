@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "889583523171",
+    "firebase_url": "https://focus-friend-239a2-default-rtdb.firebaseio.com",
+    "project_id": "focus-friend-239a2",
+    "storage_bucket": "focus-friend-239a2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:889583523171:android:54dd9ffe200b032b48ef56",
+        "android_client_info": {
+          "package_name": "com.esteban.lopez.focus_friend"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "889583523171-s04k13pskug2sp5fpfetqstf1nh5jgu6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdACiQLNZO7KpwzbNjKdWYDYO19_0Bh6I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "889583523171-s04k13pskug2sp5fpfetqstf1nh5jgu6.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "889583523171-fnpstepqk05rqj23iafeg8rsibt8omsi.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.esteban.lopez.focusFriend"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
