@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:focus_friend/utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../provider/streams/activitiesStreamProvider.dart';
+import '../task_status.dart';
 import '../ui/task_card_widget.dart';
 
 class CalendarPage extends ConsumerWidget {
@@ -35,8 +37,9 @@ class CalendarPage extends ConsumerWidget {
                       title: data[index].name ?? '',
                       description:
                       data[index].description ?? '',
-                      time: data[index].time??'',
-                      completed: false,
+                      timeRemaining: parseTimeString(data[index].time??''),
+                      imagePath: data[index].image??'',
+                      status: TaskStatus.fromString(data[index].status??''),
                     ),
                   );
                 },

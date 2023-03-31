@@ -2,18 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import '../task_status.dart';
+
 class TaskCard extends StatefulWidget {
   final String title;
   final String description;
-  final String time;
-  final bool completed;
+  final String timeRemaining;
+  final TaskStatus status;
+  final String imagePath;
 
   const TaskCard({
     Key? key,
     required this.title,
     required this.description,
-    required this.time,
-    required this.completed,
+    required this.timeRemaining,
+    required this.status,
+    required this.imagePath,
   }) : super(key: key);
 
   @override
@@ -21,107 +25,97 @@ class TaskCard extends StatefulWidget {
 }
 
 class _TaskCardState extends State<TaskCard> {
-  bool _completed = false;
+  bool _isExpanded = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _completed = widget.completed;
-  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
         setState(() {
-          _completed = !_completed;
+          _isExpanded = !_isExpanded;
         });
       },
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: _completed ? Colors.grey.shade300 : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.shade300,
-              blurRadius: 5,
-              offset: const Offset(0, 5),
+      child: Card(
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+          child: ExpansionTile(
+            onExpansionChanged: (isExpanded) {
+              setState(() {
+                _isExpanded = isExpanded;
+              });
+            },
+            title: Text(
+              widget.title,
+              style: GoogleFonts.quicksand(
+                textStyle: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: Colors.grey.shade800),
+              ),
             ),
-          ],
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.title,
-                    style: GoogleFonts.quicksand(
-                      textStyle: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
+            subtitle: Text(
+              widget.timeRemaining,
+              style: TextStyle(color: Colors.grey.shade800),
+            ),
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      height: 20,
                     ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    widget.description,
-                    style: GoogleFonts.quicksand(
-                      textStyle: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade500,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.blueAccent.shade100,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        const Icon(
-                          Icons.access_time,
-                          color: Colors.white,
-                          size: 16,
+                        Image.network(
+                          widget.imagePath,
+                          height: 100,
                         ),
-                        const SizedBox(width: 5),
-                        Builder(
-                          builder: (context) {
-                            var now = DateTime.now();
-                            var hora = int.parse(widget.time.split(':')[0]);
-                            var minutos = int.parse(widget.time.split(':')[1]);
-                            return Text(
-                              DateFormat('hh:mm a').format(DateTime(now.year,now.month,now.day,hora,minutos)),
-                              style: GoogleFonts.quicksand(
-                                textStyle: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white,
-                                ),
+                        SizedBox(
+                          width: 20,
+                        ),
+                        Flexible(
+                          child: Text(
+                            widget.description,
+                            style: GoogleFonts.quicksand(
+                              textStyle: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey.shade500,
                               ),
-                            );
-                          }
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                  )
-                ],
+                    const SizedBox(height: 5),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            // Implementar la función de eliminar
+                          },
+                          icon: Icon(Icons.edit,color: Colors.blue[800],),
+                        ),
+                        const SizedBox(width: 10),
+                        IconButton(
+                          onPressed: () {
+                            // Implementar la función de eliminar
+                          },
+                          icon: Icon(Icons.delete,color: Colors.red,),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                  ],
+                ),
               ),
-            ),
-            // Checkbox(
-            //   value: _completed,
-            //   onChanged: (value) {
-            //     setState(() {
-            //       _completed = value!;
-            //     });
-            //   },
-            // ),
-          ],
+            ],
+          ),
         ),
       ),
     );
