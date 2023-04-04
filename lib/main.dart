@@ -96,7 +96,7 @@ Future<void> scheduleNotifications() async {
   List<ActivityModel> activities = [];
   values.forEach((key, value) {
     activities
-        .add(ActivityModel.fromJson(Map<String, dynamic>.from(value)));
+        .add(ActivityModel.fromJson(key,Map<String, dynamic>.from(value)));
   });
 
   activities.sort((a, b) {

@@ -40,7 +40,7 @@ class ActivityRepository {
           return (currTime.isAfter(nextTime)) ? curr : next;
         });
 
-        return ActivityModel.fromJson(Map<String,dynamic>.from(latestActivity));
+        return ActivityModel.fromJson("",Map<String,dynamic>.from(latestActivity));
       } else {
         return ActivityModel();
       }
@@ -56,7 +56,7 @@ class ActivityRepository {
       List<ActivityModel> activities = [];
       values.forEach((key, value) {
         activities
-            .add(ActivityModel.fromJson(Map<String, dynamic>.from(value)));
+            .add(ActivityModel.fromJson(key,Map<String, dynamic>.from(value)));
       });
       activities.sort((a, b) {
         DateTime dateA = parseTimeString(a.time!);

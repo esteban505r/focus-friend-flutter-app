@@ -1,4 +1,5 @@
 class ActivityModel {
+  String? id;
   String? extraText;
   String? name;
   String? time;
@@ -8,6 +9,7 @@ class ActivityModel {
   String? lastUpdate;
 
   ActivityModel({
+    this.id,
     this.extraText,
     this.name,
     this.time,
@@ -17,7 +19,7 @@ class ActivityModel {
     this.lastUpdate,
   });
 
-  ActivityModel.fromJson(Map<String, dynamic> json) {
+  ActivityModel.fromJson(String this.id,Map<String, dynamic> json) {
     extraText = json['extraText'];
     name = json['name'];
     time = json['time'];

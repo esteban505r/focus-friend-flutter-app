@@ -1,18 +1,37 @@
-import 'package:focus_friend/task_status.dart';
+import 'package:flutter/material.dart';
 
+import '../task_status.dart';
+
+@immutable
 class TaskState {
-  TaskStatus status;
-  int hoursRemaining;
+  final String id;
+  final TaskStatus status;
+  final int secondsRemaining;
 
-  int minutesRemaining;
+  const TaskState(this.id, {
+    this.status = TaskStatus.PENDING,
+    this.secondsRemaining = 0,
+  });
 
-  TaskState({this.status = TaskStatus
-      .PENDING, this.hoursRemaining = 0, this.minutesRemaining = 0});
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is TaskState &&
+              runtimeType == other.runtimeType &&
+              status == other.status &&
+              secondsRemaining == other.secondsRemaining;
 
-  TaskState copyWith(TaskStatus? status, int? hoursRemaining,
-      int? minutesRemaining) {
-    return TaskState(status: status ?? this.status,
-        hoursRemaining: hoursRemaining ?? this.hoursRemaining,
-        minutesRemaining: minutesRemaining ?? this.minutesRemaining);
+  @override
+  int get hashCode => status.hashCode ^ secondsRemaining.hashCode;
+
+  TaskState copyWith({
+    TaskStatus? status,
+    int? secondsRemaining,
+  }) {
+    return TaskState(
+      id,
+      status: status ?? this.status,
+      secondsRemaining: secondsRemaining ?? this.secondsRemaining,
+    );
   }
 }

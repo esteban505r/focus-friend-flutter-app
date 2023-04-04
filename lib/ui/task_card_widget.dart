@@ -1,35 +1,66 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-
+import '../provider/time_notifier.dart';
 import '../task_status.dart';
+import '../utils.dart';
 
-class TaskCard extends StatefulWidget {
+class TaskCard extends ConsumerStatefulWidget {
   final String title;
   final String description;
-  final String timeRemaining;
   final TaskStatus status;
   final String imagePath;
+  final String time;
+  final String id;
 
-  const TaskCard({
+  const TaskCard(
+    this.id, {
     Key? key,
     required this.title,
     required this.description,
-    required this.timeRemaining,
     required this.status,
     required this.imagePath,
+    required this.time,
   }) : super(key: key);
 
   @override
   _TaskCardState createState() => _TaskCardState();
 }
 
-class _TaskCardState extends State<TaskCard> {
+class _TaskCardState extends ConsumerState<TaskCard> {
   bool _isExpanded = false;
 
+  @override
+  void initState() {
+    TaskController controller = ref.read(taskController(widget.id).notifier);
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      controller.setSecondsRemaining(getSeconds(widget.time));
+      controller.start();
+    });
+    super.initState();
+  }
+
+  int getSeconds(String time) {
+    try {
+      var date = parseTimeString(time);
+      Duration duration = date.difference(DateTime.now());
+      if (!duration.isNegative) {
+        return duration.inSeconds;
+      }
+      return 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  String getTimeRemaining(int secondsRemaining) {
+    final duration = Duration(seconds: secondsRemaining);
+    return '${duration.inHours.toString().padLeft(2, '0')}:${(duration.inMinutes % 60).toString().padLeft(2, '0')}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final taskState = ref.watch(taskController(widget.id));
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -38,7 +69,7 @@ class _TaskCardState extends State<TaskCard> {
       },
       child: Card(
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
           child: ExpansionTile(
             onExpansionChanged: (isExpanded) {
               setState(() {
@@ -54,9 +85,38 @@ class _TaskCardState extends State<TaskCard> {
                     color: Colors.grey.shade800),
               ),
             ),
-            subtitle: Text(
-              widget.timeRemaining,
-              style: TextStyle(color: Colors.grey.shade800),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.watch,
+                    size: 17,
+                    color: Colors.blue,
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  Text(
+                    getTimeRemaining(taskState.secondsRemaining),
+                    style: TextStyle(color: Colors.grey.shade800),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  const Icon(
+                    Icons.watch_later_outlined,
+                    size: 17,
+                  ),
+                  const SizedBox(
+                    width: 5,
+                  ),
+                  Text(
+                    widget.time,
+                    style: TextStyle(color: Colors.grey.shade800),
+                  ),
+                ],
+              ),
             ),
             children: [
               Padding(
@@ -64,7 +124,7 @@ class _TaskCardState extends State<TaskCard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(
+                    const SizedBox(
                       height: 20,
                     ),
                     Row(
@@ -73,8 +133,21 @@ class _TaskCardState extends State<TaskCard> {
                         Image.network(
                           widget.imagePath,
                           height: 100,
+                          width: 100,
+                          loadingBuilder: (_,child,progress){
+                           if(progress==null){
+                             return child;
+                           }
+                           return const Center(child: CircularProgressIndicator(),);
+                          },
+                          errorBuilder: (_, ___, __) {
+                            return Image.asset(
+                              "assets/placeholder.png",
+                              height: 100,
+                            );
+                          },
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: 20,
                         ),
                         Flexible(
@@ -99,14 +172,20 @@ class _TaskCardState extends State<TaskCard> {
                           onPressed: () {
                             // Implementar la función de eliminar
                           },
-                          icon: Icon(Icons.edit,color: Colors.blue[800],),
+                          icon: Icon(
+                            Icons.edit,
+                            color: Colors.blue[800],
+                          ),
                         ),
                         const SizedBox(width: 10),
                         IconButton(
                           onPressed: () {
                             // Implementar la función de eliminar
                           },
-                          icon: Icon(Icons.delete,color: Colors.red,),
+                          icon: const Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                          ),
                         ),
                       ],
                     ),
