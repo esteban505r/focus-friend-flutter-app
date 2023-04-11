@@ -13,8 +13,7 @@ class TaskCard extends ConsumerStatefulWidget {
   final String time;
   final String id;
 
-  const TaskCard(
-    this.id, {
+  const TaskCard(this.id, {
     Key? key,
     required this.title,
     required this.description,
@@ -55,7 +54,10 @@ class _TaskCardState extends ConsumerState<TaskCard> {
 
   String getTimeRemaining(int secondsRemaining) {
     final duration = Duration(seconds: secondsRemaining);
-    return '${duration.inHours.toString().padLeft(2, '0')}:${(duration.inMinutes % 60).toString().padLeft(2, '0')}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
+    return '${duration.inHours.toString().padLeft(2, '0')}:${(duration
+        .inMinutes % 60).toString().padLeft(2, '0')}:${(duration.inSeconds % 60)
+        .toString()
+        .padLeft(2, '0')}';
   }
 
   @override
@@ -71,6 +73,9 @@ class _TaskCardState extends ConsumerState<TaskCard> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
           child: ExpansionTile(
+            shape: const RoundedRectangleBorder(
+              side: BorderSide(color: Colors.transparent),
+            ),
             onExpansionChanged: (isExpanded) {
               setState(() {
                 _isExpanded = isExpanded;
@@ -87,7 +92,7 @@ class _TaskCardState extends ConsumerState<TaskCard> {
             ),
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 8.0),
-              child: Row(
+              child: taskState.secondsRemaining > 0 ? Row(
                 children: [
                   const Icon(
                     Icons.watch,
@@ -99,8 +104,7 @@ class _TaskCardState extends ConsumerState<TaskCard> {
                   ),
                   Text(
                     getTimeRemaining(taskState.secondsRemaining),
-                    style: TextStyle(color: Colors.grey.shade800),
-                  ),
+                    style: TextStyle(color: Colors.grey.shade800),),
                   const SizedBox(
                     width: 10,
                   ),
@@ -112,13 +116,24 @@ class _TaskCardState extends ConsumerState<TaskCard> {
                     width: 5,
                   ),
                   Text(
-                    widget.time,
+                    parse24to12(widget.time),
                     style: TextStyle(color: Colors.grey.shade800),
                   ),
                 ],
+              ) : Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color: getStatusColor(taskState.status.toString()),
+                ),
+                child: Text(
+                  getStatus(taskState.status.toString()),
+                  style: const TextStyle(color: Colors.white),
+                ),
               ),
             ),
-            children: [
+            children: <Widget>[
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Column(
@@ -134,11 +149,12 @@ class _TaskCardState extends ConsumerState<TaskCard> {
                           widget.imagePath,
                           height: 100,
                           width: 100,
-                          loadingBuilder: (_,child,progress){
-                           if(progress==null){
-                             return child;
-                           }
-                           return const Center(child: CircularProgressIndicator(),);
+                          loadingBuilder: (_, child, progress) {
+                            if (progress == null) {
+                              return child;
+                            }
+                            return const Center(
+                              child: CircularProgressIndicator(),);
                           },
                           errorBuilder: (_, ___, __) {
                             return Image.asset(

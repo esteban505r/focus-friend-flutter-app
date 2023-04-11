@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:focus_friend/pages/calendar_page.dart';
+import 'package:focus_friend/pages/tasks_page.dart';
 import 'package:focus_friend/provider/home_state_provider.dart';
 
 import 'home_page.dart';

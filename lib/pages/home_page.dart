@@ -243,25 +243,5 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  String getStatus(String? status) {
-    switch(status){
-      case "completed":
-        return "Completado";
-      case "omitted":
-        return "Omitido";
-      default:
-        return '';
-    }
-  }
 
-  Color getStatusColor(String? status) {
-    switch(status){
-      case "completed":
-        return Colors.green;
-      case "omitted":
-        return Colors.amber;
-      default:
-        return Colors.green;
-    }
-  }
 }
