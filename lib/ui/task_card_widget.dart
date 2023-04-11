@@ -12,15 +12,17 @@ class TaskCard extends ConsumerStatefulWidget {
   final String imagePath;
   final String time;
   final String id;
+  final Function(String) onTaskStateChanged;
 
-  const TaskCard(this.id, {
-    Key? key,
-    required this.title,
-    required this.description,
-    required this.status,
-    required this.imagePath,
-    required this.time,
-  }) : super(key: key);
+  const TaskCard(this.id,
+      {Key? key,
+      required this.title,
+      required this.description,
+      required this.status,
+      required this.imagePath,
+      required this.time,
+      required this.onTaskStateChanged})
+      : super(key: key);
 
   @override
   _TaskCardState createState() => _TaskCardState();
@@ -54,10 +56,7 @@ class _TaskCardState extends ConsumerState<TaskCard> {
 
   String getTimeRemaining(int secondsRemaining) {
     final duration = Duration(seconds: secondsRemaining);
-    return '${duration.inHours.toString().padLeft(2, '0')}:${(duration
-        .inMinutes % 60).toString().padLeft(2, '0')}:${(duration.inSeconds % 60)
-        .toString()
-        .padLeft(2, '0')}';
+    return '${duration.inHours.toString().padLeft(2, '0')}:${(duration.inMinutes % 60).toString().padLeft(2, '0')}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
   }
 
   @override
@@ -92,46 +91,49 @@ class _TaskCardState extends ConsumerState<TaskCard> {
             ),
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 8.0),
-              child: taskState.secondsRemaining > 0 ? Row(
-                children: [
-                  const Icon(
-                    Icons.watch,
-                    size: 17,
-                    color: Colors.blue,
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    getTimeRemaining(taskState.secondsRemaining),
-                    style: TextStyle(color: Colors.grey.shade800),),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  const Icon(
-                    Icons.watch_later_outlined,
-                    size: 17,
-                  ),
-                  const SizedBox(
-                    width: 5,
-                  ),
-                  Text(
-                    parse24to12(widget.time),
-                    style: TextStyle(color: Colors.grey.shade800),
-                  ),
-                ],
-              ) : Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: getStatusColor(taskState.status.toString()),
-                ),
-                child: Text(
-                  getStatus(taskState.status.toString()),
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
+              child: taskState.secondsRemaining > 0
+                  ? Row(
+                      children: [
+                        const Icon(
+                          Icons.watch,
+                          size: 17,
+                          color: Colors.blue,
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          getTimeRemaining(taskState.secondsRemaining),
+                          style: TextStyle(color: Colors.grey.shade800),
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        const Icon(
+                          Icons.watch_later_outlined,
+                          size: 17,
+                        ),
+                        const SizedBox(
+                          width: 5,
+                        ),
+                        Text(
+                          parse24to12(widget.time),
+                          style: TextStyle(color: Colors.grey.shade800),
+                        ),
+                      ],
+                    )
+                  : Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        color: getStatusColor(widget.status.toString()),
+                      ),
+                      child: Text(
+                        getStatus(widget.status.toString()),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
             ),
             children: <Widget>[
               Padding(
@@ -154,7 +156,8 @@ class _TaskCardState extends ConsumerState<TaskCard> {
                               return child;
                             }
                             return const Center(
-                              child: CircularProgressIndicator(),);
+                              child: CircularProgressIndicator(),
+                            );
                           },
                           errorBuilder: (_, ___, __) {
                             return Image.asset(
@@ -184,6 +187,40 @@ class _TaskCardState extends ConsumerState<TaskCard> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
+                        if (widget.status == TaskStatus.PENDING) ...<Widget>[
+                          IconButton(
+                            onPressed: () {
+                              widget.onTaskStateChanged(
+                                  TaskStatus.OMITTED.toString());
+                            },
+                            icon: Icon(
+                              Icons.accessibility_new_sharp,
+                              color: Colors.yellow[800],
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                        ],
+                        IconButton(
+                          onPressed: () {
+                            if (widget.status != TaskStatus.PENDING) {
+                              widget.onTaskStateChanged(
+                                  TaskStatus.PENDING.toString());
+                            }
+                            else{
+                              widget.onTaskStateChanged(
+                                  TaskStatus.COMPLETED.toString());
+                            }
+                          },
+                          icon: Icon(
+                            widget.status == TaskStatus.PENDING
+                                ? Icons.check_circle
+                                : Icons.close,
+                            color: widget.status == TaskStatus.PENDING
+                                ? Colors.green[800]
+                                : Colors.red[800],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
                         IconButton(
                           onPressed: () {
                             // Implementar la función de eliminar

@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../provider/streams/activitiesStreamProvider.dart';
+import '../provider/streams/activityStreamProvider.dart';
 import '../task_status.dart';
 import '../ui/task_card_widget.dart';
 
@@ -47,6 +48,13 @@ class CalendarPage extends ConsumerWidget {
                                 imagePath: data[index].image ?? '',
                                 status: TaskStatus.fromString(
                                     data[index].status ?? ''),
+                                onTaskStateChanged: (state){
+                                  ref
+                                      .read(
+                                      activityRepositoryProvider)
+                                      .updateStatus(
+                                      data[index].time!, state);
+                                },
                               ),
                             );
                           },

@@ -19,7 +19,7 @@ class ActivityModel {
     this.lastUpdate,
   });
 
-  ActivityModel.fromJson(String this.id,Map<String, dynamic> json) {
+  ActivityModel.fromJson(String this.id, Map<String, dynamic> json) {
     extraText = json['extraText'];
     name = json['name'];
     time = json['time'];
@@ -27,6 +27,15 @@ class ActivityModel {
     image = json['image'];
     status = json['status'];
     lastUpdate = json['last_update'];
+
+    try {
+      DateTime date = DateTime.parse(lastUpdate ?? '');
+      if (date.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
+        status = 'pending';
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 
   Map<String, dynamic> toJson() {

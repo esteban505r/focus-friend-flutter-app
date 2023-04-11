@@ -12,7 +12,7 @@ class ActivityRepository {
     if (result.snapshot.value != null) {
       Map<dynamic, dynamic> values = Map<dynamic,dynamic>.from(result.snapshot.value as Map<Object?,Object?>);
       String objectId = values.keys.first;
-      objectsRef.child(objectId).update({"status": status});
+      objectsRef.child(objectId).update({"status": status,"last_update":DateTime.now().toIso8601String()});
     }
   }
 

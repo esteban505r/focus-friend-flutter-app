@@ -15,7 +15,6 @@ class TaskController extends StateNotifier<TaskState> {
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (state.secondsRemaining > 0) {
         state = state.copyWith(secondsRemaining: state.secondsRemaining - 1);
-        print('UPDATING' + state.secondsRemaining.toString());
       } else {
         _timer?.cancel();
       }

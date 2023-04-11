@@ -18,7 +18,6 @@ enum TaskStatus { COMPLETED, OMITTED, PENDING;
     switch(taskStatus){
       case "completed":
         return TaskStatus.COMPLETED;
-        break;
       case "omitted":
         return TaskStatus.OMITTED;
       case "pending":
