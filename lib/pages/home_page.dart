@@ -33,7 +33,6 @@ class _HomePageState extends ConsumerState<HomePage> {
             ));
   }
 
-
   Widget _createBody(ActivityModel data) {
     return SizedBox(
       width: double.infinity,
@@ -92,64 +91,66 @@ class _HomePageState extends ConsumerState<HomePage> {
                   ),
                 ),
               ),
-              getStatus(data.status).isEmpty ? SizedBox.shrink() : Positioned(
-                top: 25,
-                right: 5,
-                child: AnimatedOpacity(
-                  opacity: data.status!="pending" ? 1 : 0,
-                  duration: const Duration(milliseconds: 500),
-                  child: FadeScaleWidget(
-                    curve: Curves.easeInOut,
-                    duration: const Duration(milliseconds: 500),
-                    child: Transform.rotate(
-                      angle: 0.5,
-                      child: InkWell(
-                        onTap: () {
-                          if (data.status!="pending") {
-                            showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return ConfirmDialog(
-                                    message:
-                                        "Quieres deshacer esta tarea completada?",
-                                    title: "Deshacer tarea completada",
-                                    onConfirm: (){
-                                      ref
-                                          .read(
-                                          activityRepositoryProvider)
-                                          .updateStatus(
-                                          data.time!, "pending");
-                                    },
-                                  );
-                                });
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            color: getStatusColor(data.status),
-                          ),
-                          child: Text(
-                            getStatus(data.status),
-                            style: TextStyle(color: Colors.white),
+              getStatus(data.status).isEmpty
+                  ? const SizedBox.shrink()
+                  : Positioned(
+                      top: 25,
+                      right: 5,
+                      child: AnimatedOpacity(
+                        opacity: data.status != "pending" ? 1 : 0,
+                        duration: const Duration(milliseconds: 500),
+                        child: FadeScaleWidget(
+                          curve: Curves.easeInOut,
+                          duration: const Duration(milliseconds: 500),
+                          child: Transform.rotate(
+                            angle: 0.5,
+                            child: InkWell(
+                              onTap: () {
+                                if (data.status != "pending") {
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return ConfirmDialog(
+                                          message:
+                                              "Quieres deshacer esta tarea completada?",
+                                          title: "Deshacer tarea completada",
+                                          onConfirm: () {
+                                            ref
+                                                .read(
+                                                    activityRepositoryProvider)
+                                                .updateStatus(
+                                                    data.time!, "pending");
+                                          },
+                                        );
+                                      });
+                                }
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  color: getStatusColor(data.status),
+                                ),
+                                child: Text(
+                                  getStatus(data.status),
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-              ),
             ],
           ),
           AnimatedOpacity(
             duration: const Duration(milliseconds: 500),
-              opacity: data.status!="pending" ? 0 : 1,
+            opacity: data.status != "pending" ? 0 : 1,
             child: AnimatedSize(
               duration: const Duration(milliseconds: 500),
               curve: Curves.easeInOut,
-              child: data.status!="pending"
+              child: data.status != "pending"
                   ? const SizedBox.shrink()
                   : Padding(
                       padding: const EdgeInsets.symmetric(
@@ -208,13 +209,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                                         return ConfirmDialog(
                                           title: "Omitir tarea",
                                           message:
-                                          "Estas seguro de que quieres omitir esta tarea?",
+                                              "Estas seguro de que quieres omitir esta tarea?",
                                           onConfirm: () {
                                             ref
                                                 .read(
-                                                activityRepositoryProvider)
+                                                    activityRepositoryProvider)
                                                 .updateStatus(
-                                                data.time!, "omitted");
+                                                    data.time!, "omitted");
                                           },
                                         );
                                       });
@@ -242,6 +243,4 @@ class _HomePageState extends ConsumerState<HomePage> {
       ),
     );
   }
-
-
 }
