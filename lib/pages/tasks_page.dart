@@ -36,7 +36,7 @@ class CalendarPage extends ConsumerWidget {
                       ),
                       Expanded(
                         child: ListView.builder(
-                          padding: EdgeInsets.all(20),
+                          padding: const EdgeInsets.all(20),
                           itemBuilder: (context, index) {
                             return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 10),
@@ -68,7 +68,7 @@ class CalendarPage extends ConsumerWidget {
                     right: 24,
                     child: FloatingActionButton(
                       onPressed: () {},
-                      child: Icon(Icons.plus_one),
+                      child: const Icon(Icons.plus_one),
                     ),
                   ),
                 ],

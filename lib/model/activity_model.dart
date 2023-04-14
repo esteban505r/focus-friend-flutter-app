@@ -30,7 +30,7 @@ class ActivityModel {
 
     try {
       DateTime date = DateTime.parse(lastUpdate ?? '');
-      if (date.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
+      if (date.day < DateTime.now().day || date.month < DateTime.now().month) {
         status = 'pending';
       }
     } catch (e) {
