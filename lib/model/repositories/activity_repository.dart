@@ -79,6 +79,7 @@ class ActivityRepository {
         activities.add(
             LeisureActivityModel.fromJson(Map<String, dynamic>.from(value)));
       });
+      activities.shuffle();
       return activities;
     });
   }

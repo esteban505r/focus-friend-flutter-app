@@ -3,6 +3,7 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:workmanager/workmanager.dart';
 
 import '../main.dart';
+import '../utils/notifications.dart';
 
 const String updateNotificationsTask = "updateNotificationsTask";
 

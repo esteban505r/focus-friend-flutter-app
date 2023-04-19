@@ -7,6 +7,7 @@ class ActivityModel {
   String? status;
   String? image;
   String? lastUpdate;
+  String? endingTime;
 
   ActivityModel({
     this.id,
@@ -17,6 +18,7 @@ class ActivityModel {
     this.image,
     this.status,
     this.lastUpdate,
+    this.endingTime,
   });
 
   ActivityModel.fromJson(String this.id, Map<String, dynamic> json) {
@@ -30,23 +32,36 @@ class ActivityModel {
 
     try {
       DateTime date = DateTime.parse(lastUpdate ?? '');
-      if (date.day < DateTime.now().day || date.month < DateTime.now().month) {
+      if (date.day < DateTime
+          .now()
+          .day || date.month < DateTime
+          .now()
+          .month) {
         status = 'pending';
       }
     } catch (e) {
       print(e);
     }
+
+    if (json['ending_time'] != null) {
+      endingTime = json['ending_time'];
+    } else {
+      endingTime = null;
+    }
+
+    Map<String, dynamic> toJson() {
+      final Map<String, dynamic> data = <String, dynamic>{};
+      data['extraText'] = extraText;
+      data['name'] = name;
+      data['time'] = time;
+      data['description'] = description;
+      data['image'] = image;
+      data['status'] = status;
+      data['last_update'] = lastUpdate;
+      data['ending_time'] = endingTime;
+      return data;
+    }
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['extraText'] = extraText;
-    data['name'] = name;
-    data['time'] = time;
-    data['description'] = description;
-    data['image'] = image;
-    data['status'] = status;
-    data['last_update'] = lastUpdate;
-    return data;
-  }
+
 }
