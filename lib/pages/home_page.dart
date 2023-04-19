@@ -60,7 +60,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             ),
             leisureStream.when(
-                data: (data) => _createLeisureCard(data),
+                data: (dataLeisure) => _createLeisureCard(data,dataLeisure),
                 error: (error, stacktrace) {
                   debugPrint(error.toString());
                   return const SizedBox.shrink();
@@ -281,46 +281,50 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  Widget _createLeisureCard(List<LeisureActivityModel> leisureActivities) {
+  Widget _createLeisureCard(ActivityModel data,List<LeisureActivityModel> leisureActivities) {
     return CarouselSlider.builder(
         itemCount: leisureActivities.length,
         itemBuilder: (context, index, index2) {
-          LeisureActivityModel data = leisureActivities[index];
-          return Card(
-            elevation: 2,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              width: MediaQuery.of(context).size.width * 0.8,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.network(
-                    data.image ?? '',
-                    height: 200,
-                    errorBuilder: (_, ___, __) {
-                      return Image.asset(
-                        "assets/placeholder.png",
-                        height: 200,
-                      );
-                    },
-                    fit: BoxFit.cover,
-                  ),
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(top: 15.0, left: 20, right: 20),
-                    child: Text(
-                      data.name ?? '',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.montserrat(
-                        fontSize: 23,
-                        fontWeight: FontWeight.w400,
-                        color: const Color(0xff222222),
+          LeisureActivityModel item = leisureActivities[index];
+          return AnimatedOpacity(
+            opacity: data.status != "pending" ? 1 : 0,
+            duration: Duration(milliseconds: 500),
+            child: Card(
+              elevation: 2,
+              shape:
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.network(
+                      item.image ?? '',
+                      height: 200,
+                      errorBuilder: (_, ___, __) {
+                        return Image.asset(
+                          "assets/placeholder.png",
+                          height: 200,
+                        );
+                      },
+                      fit: BoxFit.cover,
+                    ),
+                    Padding(
+                      padding:
+                          const EdgeInsets.only(top: 15.0, left: 20, right: 20),
+                      child: Text(
+                        item.name ?? '',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 23,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xff222222),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );
