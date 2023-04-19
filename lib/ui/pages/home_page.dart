@@ -2,15 +2,17 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_friend/model/activity_model.dart';
+import 'package:focus_friend/model/repositories/activity_repository.dart';
 import 'package:focus_friend/ui/widgets/confirm_dialog.dart';
 import 'package:focus_friend/utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-import '../model/leisure_activity_model.dart';
-import '../provider/streams/activityStreamProvider.dart';
-import '../provider/streams/leisureActivitiesStreamProvider.dart';
-import '../ui/widgets/fade_scale_widget.dart';
+import '../../model/leisure_activity_model.dart';
+import '../../provider/streams/activityStreamProvider.dart';
+import '../../provider/streams/leisureActivitiesStreamProvider.dart';
+import '../widgets/fade_scale_widget.dart';
+
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -47,9 +49,11 @@ class _HomePageState extends ConsumerState<HomePage> {
             : MainAxisAlignment.center,
         children: [
           Padding(
-              padding: data.status != "pending"
-                  ? EdgeInsets.symmetric(vertical: 20)
-                  : EdgeInsets.zero,child: _createCard(data),),
+            padding: data.status != "pending"
+                ? EdgeInsets.symmetric(vertical: 20)
+                : EdgeInsets.zero,
+            child: _createCard(data),
+          ),
           if (data.status != "pending") ...[
             Padding(
               padding: const EdgeInsets.only(bottom: 20.0),
@@ -60,7 +64,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             ),
             leisureStream.when(
-                data: (dataLeisure) => _createLeisureCard(data,dataLeisure),
+                data: (dataLeisure) => _createLeisureCard(data, dataLeisure),
                 error: (error, stacktrace) {
                   debugPrint(error.toString());
                   return const SizedBox.shrink();
@@ -157,8 +161,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                         "Quieres deshacer esta tarea completada?",
                                     title: "Deshacer tarea completada",
                                     onConfirm: () {
-                                      ref
-                                          .read(activityRepositoryProvider)
+                                      ActivityRepository()
                                           .updateStatus(data.time!, "pending");
                                     },
                                   );
@@ -216,10 +219,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                                     message:
                                         "Estas seguro de que completaste esta tarea?",
                                     onConfirm: () {
-                                      ref
-                                          .read(activityRepositoryProvider)
-                                          .updateStatus(
-                                              data.time!, "completed");
+                                      ActivityRepository().updateStatus(
+                                          data.time!, "completed");
                                     },
                                   );
                                 });
@@ -253,8 +254,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                     message:
                                         "Estas seguro de que quieres omitir esta tarea?",
                                     onConfirm: () {
-                                      ref
-                                          .read(activityRepositoryProvider)
+                                      ActivityRepository()
                                           .updateStatus(data.time!, "omitted");
                                     },
                                   );
@@ -281,7 +281,8 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  Widget _createLeisureCard(ActivityModel data,List<LeisureActivityModel> leisureActivities) {
+  Widget _createLeisureCard(
+      ActivityModel data, List<LeisureActivityModel> leisureActivities) {
     return CarouselSlider.builder(
         itemCount: leisureActivities.length,
         itemBuilder: (context, index, index2) {
@@ -291,8 +292,8 @@ class _HomePageState extends ConsumerState<HomePage> {
             duration: Duration(milliseconds: 500),
             child: Card(
               elevation: 2,
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 width: MediaQuery.of(context).size.width * 0.8,

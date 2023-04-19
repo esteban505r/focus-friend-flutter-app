@@ -44,6 +44,7 @@ dependencies:
   timezone: ^0.9.1
   workmanager: ^0.5.1
   carousel_slider: ^4.2.1
+  image_picker: ^0.8.7+3
 
 dev_dependencies:
   flutter_test:

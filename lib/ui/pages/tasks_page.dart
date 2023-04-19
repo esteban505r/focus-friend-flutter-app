@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:focus_friend/provider/time_notifier.dart';
-import 'package:focus_friend/utils.dart';
+import 'package:focus_friend/model/repositories/activity_repository.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 
-import '../provider/streams/activitiesStreamProvider.dart';
-import '../provider/streams/activityStreamProvider.dart';
-import '../task_status.dart';
-import '../ui/task_card_widget.dart';
+import '../../provider/streams/activitiesStreamProvider.dart';
+import '../../task_status.dart';
+import '../task_card_widget.dart';
+import 'new_task_page.dart';
 
 class CalendarPage extends ConsumerWidget {
   const CalendarPage({Key? key}) : super(key: key);
@@ -17,7 +15,8 @@ class CalendarPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final activitiesStream = ref.watch(activitiesStreamProvider);
     return activitiesStream.when(
-        data: (data) => SafeArea(
+        data: (data) =>
+            SafeArea(
               child: Stack(
                 children: [
                   Column(
@@ -48,12 +47,9 @@ class CalendarPage extends ConsumerWidget {
                                 imagePath: data[index].image ?? '',
                                 status: TaskStatus.fromString(
                                     data[index].status ?? ''),
-                                onTaskStateChanged: (state){
-                                  ref
-                                      .read(
-                                      activityRepositoryProvider)
-                                      .updateStatus(
-                                      data[index].time!, state);
+                                onTaskStateChanged: (state) {
+                                  ActivityRepository()
+                                      .updateStatus(data[index].time!, state);
                                 },
                               ),
                             );
@@ -67,8 +63,11 @@ class CalendarPage extends ConsumerWidget {
                     bottom: 24,
                     right: 24,
                     child: FloatingActionButton(
-                      onPressed: () {},
-                      child: const Icon(Icons.plus_one),
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(
+                            builder: (context) => NewTaskPage()));
+                      },
+                      child: const Icon(Icons.add),
                     ),
                   ),
                 ],
@@ -78,8 +77,9 @@ class CalendarPage extends ConsumerWidget {
           debugPrint(error.toString());
           return const Text("ERROR");
         },
-        loading: () => const Center(
-              child: CircularProgressIndicator(),
-            ));
+        loading: () =>
+        const Center(
+          child: CircularProgressIndicator(),
+        ));
   }
 }

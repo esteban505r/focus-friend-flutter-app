@@ -4,6 +4,15 @@ import 'package:focus_friend/model/leisure_activity_model.dart';
 import 'package:focus_friend/utils.dart';
 
 class ActivityRepository {
+  ActivityRepository._privateConstructor();
+
+  static final ActivityRepository _instance =
+      ActivityRepository._privateConstructor();
+
+  factory ActivityRepository() {
+    return _instance;
+  }
+
   Future<void> updateStatus(String hour, String status) async {
     DatabaseReference objectsRef =
         FirebaseDatabase.instance.ref().child("activities");

@@ -1,9 +1,7 @@
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:focus_friend/utils/notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:workmanager/workmanager.dart';
 
-import '../main.dart';
-import '../utils/notifications.dart';
 
 const String updateNotificationsTask = "updateNotificationsTask";
 

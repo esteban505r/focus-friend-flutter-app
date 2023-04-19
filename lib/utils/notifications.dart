@@ -1,10 +1,15 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:focus_friend/model/repositories/activity_repository.dart';
+import 'package:focus_friend/task_status.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:timezone/data/latest.dart' as tz2;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../background/background.dart';
+import '../firebase_options.dart';
 import '../main.dart';
 import '../model/activity_model.dart';
 import '../utils.dart';
@@ -14,9 +19,24 @@ const channelName = 'channelName';
 const channelDescription = 'channelDescription';
 
 @pragma('vm:entry-point')
-void notificationTapBackground(NotificationResponse notificationResponse) {
-  print("TRIGGERED");
-  print(notificationResponse.input);
+Future<void> notificationTapBackground(NotificationResponse notificationResponse) async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  updateNotification(
+      notificationResponse.payload ?? '', notificationResponse.input ?? '');
+  flutterLocalNotificationsPlugin.cancel(notificationResponse.id??0);
+}
+
+void updateNotification(String payload, String input) {
+  ActivityRepository().updateStatus(
+      payload ?? '',
+      input == 'Si'
+          ? TaskStatus.COMPLETED.toString()
+          : input == 'No'
+              ? TaskStatus.PENDING.toString()
+              : TaskStatus.OMITTED.toString());
 }
 
 Future<void> initializeNotifications() async {
@@ -35,8 +55,9 @@ Future<void> initializeNotifications() async {
   await flutterLocalNotificationsPlugin.initialize(initializationSettings,
       onDidReceiveNotificationResponse:
           (NotificationResponse notificationResponse) async {
-    print("TRIGGERED");
-    print(notificationResponse.input);
+    updateNotification(
+        notificationResponse.payload ?? '', notificationResponse.input ?? '');
+    flutterLocalNotificationsPlugin.cancel(notificationResponse.id??0);
   }, onDidReceiveBackgroundNotificationResponse: notificationTapBackground);
 
   tz2.initializeTimeZones();
@@ -134,7 +155,7 @@ Future<void> scheduleNotifications() async {
               actionKey,
               '',
               inputs: [
-                AndroidNotificationActionInput(choices: ["Si", "No"])
+                AndroidNotificationActionInput(choices: ["Si", "No", "Omitir"])
               ],
             )
           ]);
@@ -144,16 +165,16 @@ Future<void> scheduleNotifications() async {
       if (isAfter) {
         var difference = dateEndingTime.difference(DateTime.now());
         await localNotifications.zonedSchedule(
-          counter,
-          activity.name,
-          'Terminaste esta tarea?',
-          tz.TZDateTime.now(tz.local).add(difference),
-          notificationDetails,
-          androidAllowWhileIdle: true,
-          uiLocalNotificationDateInterpretation:
-              UILocalNotificationDateInterpretation.absoluteTime,
-          matchDateTimeComponents: DateTimeComponents.time,
-        );
+            counter,
+            activity.name,
+            'Terminaste esta tarea?',
+            tz.TZDateTime.now(tz.local).add(difference),
+            notificationDetails,
+            androidAllowWhileIdle: true,
+            uiLocalNotificationDateInterpretation:
+                UILocalNotificationDateInterpretation.absoluteTime,
+            matchDateTimeComponents: DateTimeComponents.time,
+            payload: activity.time);
       }
     }
   }
