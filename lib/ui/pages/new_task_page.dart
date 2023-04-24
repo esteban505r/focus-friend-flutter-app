@@ -2,12 +2,17 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:focus_friend/model/dto/activity_model.dart';
+import 'package:focus_friend/model/repositories/activity_repository.dart';
 import 'package:focus_friend/ui/widgets/custom_background.dart';
+import 'package:focus_friend/utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 
 class NewTaskPage extends StatefulWidget {
-  const NewTaskPage({Key? key}) : super(key: key);
+  const NewTaskPage({Key? key, this.activityModel}) : super(key: key);
+
+  final ActivityModel? activityModel;
 
   @override
   NewTaskPageState createState() => NewTaskPageState();
@@ -20,6 +25,17 @@ class NewTaskPageState extends State<NewTaskPage> {
   final _descriptionController = TextEditingController();
   final _endingTimeController = TextEditingController();
   File? _image;
+
+  @override
+  void initState() {
+    if (widget.activityModel != null) {
+      _nameController.text = widget.activityModel?.name ?? '';
+      _timeController.text = widget.activityModel?.time ?? '';
+      _descriptionController.text = widget.activityModel?.description ?? '';
+      _endingTimeController.text = widget.activityModel?.endingTime ?? '';
+    }
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -43,16 +59,18 @@ class NewTaskPageState extends State<NewTaskPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () async {
+          if (_formKey.currentState?.validate() ?? false) {
+            await _saveData();
+          }
+        },
+        backgroundColor: Theme.of(context).colorScheme.primary,
         child: const Icon(Icons.check),
-        backgroundColor: Colors.deepPurpleAccent,
       ),
       body: Stack(
-        children: [
-          CustomBackground(),
-          _createBody()
-        ],
+        children: [CustomBackground(), _createBody()],
       ),
     );
   }
@@ -76,7 +94,7 @@ class NewTaskPageState extends State<NewTaskPage> {
               GestureDetector(
                 onTap: _pickImage,
                 child: Image.asset(
-                  "assets/gallery.png",
+                  "assets/calendar.png",
                   height: 150,
                 ),
               )
@@ -102,41 +120,93 @@ class NewTaskPageState extends State<NewTaskPage> {
             const SizedBox(height: 40),
             _createTextField(_nameController, "Nombre"),
             const SizedBox(height: 16),
-            _createTextField(_timeController, "Hora"),
+            _createTextField(_timeController, "Hora", enabled: false,
+                onClick: () async {
+              TimeOfDay? time = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.now().replacing(minute: 0));
+              if (time != null) {
+                _timeController.text = formatTimeOfDay(time);
+              }
+            }),
             const SizedBox(height: 16),
             _createTextField(_descriptionController, "Descripcion"),
             const SizedBox(height: 16),
-            _createTextField(_endingTimeController, "Hora de finalizacion")
+            _createTextField(_endingTimeController, "Hora de finalizacion",
+                enabled: false, onClick: () async {
+              TimeOfDay? time = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.now().replacing(minute: 0));
+              if (time != null) {
+                _endingTimeController.text = formatTimeOfDay(time);
+              }
+            })
           ],
         ),
       ),
     );
   }
+
+  Future<void> _saveData() async {
+    try {
+      if (widget.activityModel != null) {
+        ActivityModel activityModel = ActivityModel(
+          id: widget.activityModel?.id,
+          lastUpdate: widget.activityModel?.lastUpdate ?? '',
+          image: widget.activityModel?.image ?? '',
+          extraText: widget.activityModel?.extraText ?? '',
+          status: widget.activityModel?.status ?? '',
+          description: _descriptionController.text,
+          name: _nameController.text,
+          time: _timeController.text,
+          endingTime: _endingTimeController.text,
+        );
+        await ActivityRepository().editTask(activityModel);
+      } else {
+        await ActivityRepository().addTask(ActivityModel(
+          description: _descriptionController.text,
+          name: _nameController.text,
+          time: _timeController.text,
+          endingTime: _endingTimeController.text,
+        ));
+      }
+    } catch (e) {
+      print(e);
+    } finally {
+      Navigator.pop(context);
+    }
+  }
 }
 
-Widget _createTextField(TextEditingController controller, String label) =>
+Widget _createTextField(TextEditingController controller, String label,
+        {bool enabled = true, void Function()? onClick}) =>
     Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: TextFormField(
-        controller: controller,
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: const TextStyle(color: Colors.black),
-          border: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.black),
-          ),
-          enabledBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.black),
-          ),
-          focusedBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.black),
+      child: InkWell(
+        onTap: onClick,
+        child: IgnorePointer(
+          ignoring: !enabled,
+          child: TextFormField(
+            controller: controller,
+            decoration: InputDecoration(
+              labelText: label,
+              border: const OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black),
+              ),
+              enabledBorder: const OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black),
+              ),
+              focusedBorder: const OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black),
+              ),
+            ),
+            validator: (value) {
+              if (value!.isEmpty) {
+                return 'Este campo no fue ingresado';
+              }
+              return null;
+            },
           ),
         ),
-        validator: (value) {
-          if (value!.isEmpty) {
-            return 'Este campo no fue ingresado';
-          }
-          return null;
-        },
       ),
     );

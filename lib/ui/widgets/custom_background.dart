@@ -8,12 +8,13 @@ class CustomBackground extends StatelessWidget {
     return Positioned(
       top: -50,
       child: Transform.rotate(
-        angle: pi-0.5,
+        angle: pi - 0.5,
         child: SizedBox(
           height: MediaQuery.of(context).size.height * 0.4,
           width: MediaQuery.of(context).size.width * 0.5,
           child: CustomPaint(
-            painter: BackgroundPainter(),
+            painter: BackgroundPainter(
+                color: Theme.of(context).colorScheme.primary),
           ),
         ),
       ),
@@ -22,15 +23,19 @@ class CustomBackground extends StatelessWidget {
 }
 
 class BackgroundPainter extends CustomPainter {
+  BackgroundPainter({required this.color});
+
+  final Color color;
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint();
-    paint.color = Colors.purple;
+    paint.color = color;
 
     final path = Path();
     path.moveTo(0, size.height * 0.7);
-    path.quadraticBezierTo(
-        size.width * 0.25, size.height * 0.6, size.width * 0.5, size.height * 0.7);
+    path.quadraticBezierTo(size.width * 0.25, size.height * 0.6,
+        size.width * 0.5, size.height * 0.7);
     path.quadraticBezierTo(
         size.width * 0.75, size.height * 0.8, size.width, size.height * 0.7);
     path.lineTo(size.width, size.height);

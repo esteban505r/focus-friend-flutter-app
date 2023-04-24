@@ -1,27 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:focus_friend/model/dto/activity_model.dart';
+import 'package:focus_friend/model/repositories/activity_repository.dart';
+import 'package:focus_friend/ui/pages/new_task_page.dart';
+import 'package:focus_friend/ui/widgets/confirm_dialog.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../provider/time_notifier.dart';
+import '../state/provider/controllers/task_controller.dart';
 import '../task_status.dart';
 import '../utils.dart';
 
 class TaskCard extends ConsumerStatefulWidget {
-  final String title;
-  final String description;
-  final TaskStatus status;
-  final String imagePath;
-  final String time;
-  final String id;
   final Function(String) onTaskStateChanged;
 
-  const TaskCard(this.id,
-      {Key? key,
-      required this.title,
-      required this.description,
-      required this.status,
-      required this.imagePath,
-      required this.time,
-      required this.onTaskStateChanged})
+  final ActivityModel task;
+
+  const TaskCard(
+      {Key? key, required this.task, required this.onTaskStateChanged})
       : super(key: key);
 
   @override
@@ -33,9 +27,10 @@ class _TaskCardState extends ConsumerState<TaskCard> {
 
   @override
   void initState() {
-    TaskController controller = ref.read(taskController(widget.id).notifier);
+    TaskController controller =
+        ref.read(taskController(widget.task.id ?? '').notifier);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      controller.setSecondsRemaining(getSeconds(widget.time));
+      controller.setSecondsRemaining(getSeconds(widget.task.time ?? ''));
       controller.start();
     });
     super.initState();
@@ -61,7 +56,7 @@ class _TaskCardState extends ConsumerState<TaskCard> {
 
   @override
   Widget build(BuildContext context) {
-    final taskState = ref.watch(taskController(widget.id));
+    final taskState = ref.watch(taskController(widget.task.id ?? ''));
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -81,60 +76,64 @@ class _TaskCardState extends ConsumerState<TaskCard> {
               });
             },
             title: Text(
-              widget.title,
-              style: GoogleFonts.quicksand(
+              widget.task.name ?? '',
+              style: GoogleFonts.roboto(
                 textStyle: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 16,
                     color: Colors.grey.shade800),
               ),
             ),
             subtitle: Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: taskState.secondsRemaining > 0
-                  ? Row(
-                      children: [
-                        const Icon(
-                          Icons.watch,
-                          size: 17,
-                          color: Colors.blue,
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Row(
+                  children: [
+                    if (taskState.secondsRemaining > 0)
+                     ...[
+                       const Icon(
+                         Icons.watch,
+                         size: 17,
+                         color: Colors.blue,
+                       ),
+                       const SizedBox(
+                         width: 10,
+                       ),
+                       Text(
+                         getTimeRemaining(taskState.secondsRemaining),
+                         style: TextStyle(color: Colors.grey.shade800),
+                       ),
+                     ],
+                    if (taskState.secondsRemaining <= 0)
+                      Container(
+                        width: 100,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          color: getStatusColor(widget.task.status.toString()),
                         ),
-                        const SizedBox(
-                          width: 10,
+                        child: Text(
+                          getStatus(widget.task.status.toString()),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: Colors.white,fontSize: 13),
                         ),
-                        Text(
-                          getTimeRemaining(taskState.secondsRemaining),
-                          style: TextStyle(color: Colors.grey.shade800),
-                        ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        const Icon(
-                          Icons.watch_later_outlined,
-                          size: 17,
-                        ),
-                        const SizedBox(
-                          width: 5,
-                        ),
-                        Text(
-                          parse24to12(widget.time),
-                          style: TextStyle(color: Colors.grey.shade800),
-                        ),
-                      ],
-                    )
-                  : Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        color: getStatusColor(widget.status.toString()),
                       ),
-                      child: Text(
-                        getStatus(widget.status.toString()),
-                        style: const TextStyle(color: Colors.white),
-                      ),
+                    const SizedBox(
+                      width: 10,
                     ),
-            ),
+                    const Icon(
+                      Icons.watch_later_outlined,
+                      size: 17,
+                    ),
+                    const SizedBox(
+                      width: 5,
+                    ),
+                    Text(
+                      parse24to12(widget.task.time ?? ''),
+                      style: TextStyle(color: Colors.grey.shade800),
+                    ),
+                  ],
+                )),
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -148,7 +147,7 @@ class _TaskCardState extends ConsumerState<TaskCard> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Image.network(
-                          widget.imagePath,
+                          widget.task.image ?? '',
                           height: 100,
                           width: 100,
                           loadingBuilder: (_, child, progress) {
@@ -171,7 +170,7 @@ class _TaskCardState extends ConsumerState<TaskCard> {
                         ),
                         Flexible(
                           child: Text(
-                            widget.description,
+                            widget.task.description ?? '',
                             style: GoogleFonts.quicksand(
                               textStyle: TextStyle(
                                 fontSize: 14,
@@ -187,7 +186,8 @@ class _TaskCardState extends ConsumerState<TaskCard> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        if (widget.status == TaskStatus.PENDING) ...<Widget>[
+                        if (widget.task.status ==
+                            TaskStatus.PENDING.toString()) ...<Widget>[
                           IconButton(
                             onPressed: () {
                               widget.onTaskStateChanged(
@@ -202,20 +202,21 @@ class _TaskCardState extends ConsumerState<TaskCard> {
                         ],
                         IconButton(
                           onPressed: () {
-                            if (widget.status != TaskStatus.PENDING) {
+                            if (widget.task.status !=
+                                TaskStatus.PENDING.toString()) {
                               widget.onTaskStateChanged(
                                   TaskStatus.PENDING.toString());
-                            }
-                            else{
+                            } else {
                               widget.onTaskStateChanged(
                                   TaskStatus.COMPLETED.toString());
                             }
                           },
                           icon: Icon(
-                            widget.status == TaskStatus.PENDING
+                            widget.task.status == TaskStatus.PENDING.toString()
                                 ? Icons.check_circle
                                 : Icons.close,
-                            color: widget.status == TaskStatus.PENDING
+                            color: widget.task.status ==
+                                    TaskStatus.PENDING.toString()
                                 ? Colors.green[800]
                                 : Colors.red[800],
                           ),
@@ -223,7 +224,12 @@ class _TaskCardState extends ConsumerState<TaskCard> {
                         const SizedBox(width: 10),
                         IconButton(
                           onPressed: () {
-                            // Implementar la función de eliminar
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => NewTaskPage(
+                                          activityModel: widget.task,
+                                        )));
                           },
                           icon: Icon(
                             Icons.edit,
@@ -233,7 +239,19 @@ class _TaskCardState extends ConsumerState<TaskCard> {
                         const SizedBox(width: 10),
                         IconButton(
                           onPressed: () {
-                            // Implementar la función de eliminar
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return ConfirmDialog(
+                                    message:
+                                        "Estas seguro de que quieres eliminar esta tarea?",
+                                    title: "Eliminar tarea",
+                                    onConfirm: () {
+                                      ActivityRepository()
+                                          .deleteTask(widget.task.id ?? '');
+                                    },
+                                  );
+                                });
                           },
                           icon: const Icon(
                             Icons.delete,

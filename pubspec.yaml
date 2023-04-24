@@ -45,6 +45,10 @@ dependencies:
   workmanager: ^0.5.1
   carousel_slider: ^4.2.1
   image_picker: ^0.8.7+3
+  flutter_svg: ^2.0.5
+  syncfusion_flutter_charts: ^21.1.41
+  fl_chart: ^0.62.0
+  syncfusion_flutter_calendar: ^21.1.41
 
 dev_dependencies:
   flutter_test:

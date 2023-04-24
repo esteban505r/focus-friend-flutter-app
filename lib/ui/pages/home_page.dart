@@ -1,18 +1,18 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:focus_friend/model/activity_model.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:focus_friend/model/dto/activity_model.dart';
 import 'package:focus_friend/model/repositories/activity_repository.dart';
 import 'package:focus_friend/ui/widgets/confirm_dialog.dart';
 import 'package:focus_friend/utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-import '../../model/leisure_activity_model.dart';
-import '../../provider/streams/activityStreamProvider.dart';
-import '../../provider/streams/leisureActivitiesStreamProvider.dart';
+import '../../model/dto/leisure_activity_model.dart';
+import '../../state/provider/streams/activityStreamProvider.dart';
+import '../../state/provider/streams/leisureActivitiesStreamProvider.dart';
 import '../widgets/fade_scale_widget.dart';
-
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -25,17 +25,22 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     final activityStream = ref.watch(activityStreamProvider);
-    return activityStream.when(
-        data: (data) => SafeArea(
-              child: _createBody(data),
-            ),
-        error: (error, stacktrace) {
-          debugPrint(error.toString());
-          return const Center(child: Text("ERROR"));
-        },
-        loading: () => const Center(
-              child: CircularProgressIndicator(),
-            ));
+    return SingleChildScrollView(
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height,
+        child: activityStream.when(
+            data: (data) => SafeArea(
+                  child: _createBody(data),
+                ),
+            error: (error, stacktrace) {
+              debugPrint(error.toString());
+              return const Center(child: Text("ERROR"));
+            },
+            loading: () => const Center(
+                  child: CircularProgressIndicator(),
+                )),
+      ),
+    );
   }
 
   Widget _createBody(ActivityModel data) {
@@ -43,35 +48,63 @@ class _HomePageState extends ConsumerState<HomePage> {
     return SizedBox(
       width: double.infinity,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: data.status != "pending"
-            ? MainAxisAlignment.start
-            : MainAxisAlignment.center,
         children: [
           Padding(
-            padding: data.status != "pending"
-                ? EdgeInsets.symmetric(vertical: 20)
-                : EdgeInsets.zero,
-            child: _createCard(data),
-          ),
-          if (data.status != "pending") ...[
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20.0),
-              child: Text(
-                "Tienes tiempo libre, aqui hay algunos hobbies para ti",
-                style: GoogleFonts.nunito(fontSize: 22),
-                textAlign: TextAlign.center,
-              ),
+            padding: const EdgeInsets.only(top: 20.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SvgPicture.asset(
+                  "assets/focus_friend.svg",
+                  height: 50,
+                ),
+                const SizedBox(
+                  width: 20,
+                ),
+                Text(
+                  "Focus Friend",
+                  style: GoogleFonts.alegreyaSans(
+                    textStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 25,
+                        color: Theme.of(context).colorScheme.primary),
+                  ),
+                ),
+              ],
             ),
-            leisureStream.when(
-                data: (dataLeisure) => _createLeisureCard(data, dataLeisure),
-                error: (error, stacktrace) {
-                  debugPrint(error.toString());
-                  return const SizedBox.shrink();
-                },
-                loading: () => const SizedBox.shrink())
-          ],
-          _createOptions(data)
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: _createCard(data),
+                ),
+                if (data.status != "pending") ...[
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 20.0),
+                    child: Text(
+                      "Tienes tiempo libre, aqui hay algunos hobbies para ti",
+                      style: GoogleFonts.nunito(fontSize: 22),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  leisureStream.when(
+                      data: (dataLeisure) =>
+                          _createLeisureCard(data, dataLeisure),
+                      error: (error, stacktrace) {
+                        debugPrint(error.toString());
+                        return const SizedBox.shrink();
+                      },
+                      loading: () => const SizedBox.shrink())
+                ],
+                data.status == "pending"
+                    ? _createOptions(data)
+                    : const SizedBox.shrink()
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -80,67 +113,95 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget _createCard(ActivityModel data) {
     return Stack(
       children: [
-        Card(
-          elevation: 2,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            width: MediaQuery.of(context).size.width * 0.8,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  DateFormat('h:mm a').format(parseTimeString(data.time!)),
-                  style: GoogleFonts.nunito(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xff7C7C7C),
-                  ),
-                ),
-                Visibility(
-                  visible: data.status == "pending",
-                  maintainAnimation: true,
-                  maintainState: true,
-                  child: AnimatedOpacity(
-                    opacity: data.status != "pending" ? 0 : 1,
-                    duration: const Duration(milliseconds: 500),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 30),
-                      child: Image.network(
-                        data.image ?? '',
-                        height: 200,
-                        errorBuilder: (_, ___, __) {
-                          return Image.asset(
-                            "assets/placeholder.png",
-                            height: 200,
-                          );
-                        },
-                        fit: BoxFit.cover,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(left: 8.0, bottom: 8),
+              child: Text(
+                "Tarea actual",
+                style: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontSize: 17,
+                    color: Colors.grey),
+              ),
+            ),
+            Card(
+              elevation: 1,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                width: MediaQuery.of(context).size.width * 0.9,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.watch_later,
+                          color: Theme.of(context).primaryColor,
+                          size: 17,
+                        ),
+                        SizedBox(
+                          width: 5,
+                        ),
+                        Text(
+                          DateFormat('h:mm a')
+                              .format(parseTimeString(data.time??'00:00')),
+                          style: GoogleFonts.roboto(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Visibility(
+                      visible: data.status == "pending",
+                      maintainAnimation: true,
+                      maintainState: true,
+                      child: AnimatedOpacity(
+                        opacity: data.status != "pending" ? 0 : 1,
+                        duration: const Duration(milliseconds: 500),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 30),
+                          child: Image.network(
+                            data.image ?? '',
+                            height: 150,
+                            errorBuilder: (_, ___, __) {
+                              return Image.asset(
+                                "assets/placeholder.png",
+                                height: 150,
+                              );
+                            },
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    data.name ?? '',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 23,
-                      fontWeight: FontWeight.w400,
-                      color: const Color(0xff222222),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        data.name ?? '',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.roboto(
+                          fontSize: 23,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xff222222),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
         getStatus(data.status).isEmpty
             ? const SizedBox.shrink()
             : Positioned(
-                top: 25,
+                top: 55,
                 right: 5,
                 child: AnimatedOpacity(
                   opacity: data.status != "pending" ? 1 : 0,
@@ -149,7 +210,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     curve: Curves.easeInOut,
                     duration: const Duration(milliseconds: 500),
                     child: Transform.rotate(
-                      angle: 0.5,
+                      angle: 0.4,
                       child: InkWell(
                         onTap: () {
                           if (data.status != "pending") {
@@ -189,94 +250,82 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
+  Widget _createOption(ActivityModel data,
+          {required IconData icon,
+          required bool isRight,
+          required void Function() onPressed}) =>
+      GestureDetector(
+        onTap: onPressed,
+        child: ElevatedButton(
+          onPressed: onPressed,
+          style: ButtonStyle(
+              elevation: MaterialStateProperty.resolveWith<double>((states) {
+                if (states.contains(MaterialState.pressed)) {
+                  return 2;
+                }
+                return 7;
+              }),
+              backgroundColor: !isRight
+                  ? MaterialStateProperty.all(Colors.green)
+                  : MaterialStateProperty.all(Colors.redAccent),
+              shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                      bottomLeft:
+                          isRight ? const Radius.circular(30) : Radius.zero,
+                      topLeft:
+                          isRight ? const Radius.circular(30) : Radius.zero,
+                      topRight:
+                          !isRight ? const Radius.circular(30) : Radius.zero,
+                      bottomRight: !isRight
+                          ? const Radius.circular(30)
+                          : Radius.zero)))),
+          child: Container(
+              alignment: Alignment.centerRight,
+              padding: EdgeInsets.only(
+                  left:
+                      !isRight ? MediaQuery.of(context).size.width * 0.12 : 20,
+                  right:
+                      isRight ? MediaQuery.of(context).size.width * 0.12 : 20,
+                  top: 20,
+                  bottom: 20),
+              child: Icon(icon)),
+        ),
+      );
+
   Widget _createOptions(ActivityModel data) {
-    return AnimatedOpacity(
-      duration: const Duration(milliseconds: 500),
-      opacity: data.status != "pending" ? 0 : 1,
-      child: AnimatedSize(
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-        child: data.status != "pending"
-            ? const SizedBox.shrink()
-            : Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 50.0, vertical: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        width: 90,
-                        height: 90,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return ConfirmDialog(
-                                    title: "Tarea completada",
-                                    message:
-                                        "Estas seguro de que completaste esta tarea?",
-                                    onConfirm: () {
-                                      ActivityRepository().updateStatus(
-                                          data.time!, "completed");
-                                    },
-                                  );
-                                });
-                          },
-                          style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(
-                                  Colors.greenAccent.shade100),
-                              shape: MaterialStateProperty.all(
-                                  RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(100)))),
-                          child: Image.asset(
-                            'assets/happy.png',
-                            height: 70,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        width: 90,
-                        height: 90,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return ConfirmDialog(
-                                    title: "Omitir tarea",
-                                    message:
-                                        "Estas seguro de que quieres omitir esta tarea?",
-                                    onConfirm: () {
-                                      ActivityRepository()
-                                          .updateStatus(data.time!, "omitted");
-                                    },
-                                  );
-                                });
-                          },
-                          style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(
-                                  Colors.amber.shade200),
-                              shape: MaterialStateProperty.all(
-                                  RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(100)))),
-                          child: Image.asset(
-                            'assets/crying.png',
-                            height: 70,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          _createOption(data, icon: Icons.check, isRight: false, onPressed: () {
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return ConfirmDialog(
+                    title: "Tarea completada",
+                    message: "Estas seguro de que completaste esta tarea?",
+                    onConfirm: () {
+                      ActivityRepository()
+                          .updateStatus(data.time!, "completed");
+                    },
+                  );
+                });
+          }),
+          _createOption(data, icon: Icons.close, isRight: true, onPressed: () {
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return ConfirmDialog(
+                    title: "Omitir tarea",
+                    message: "Estas seguro de que quieres omitir esta tarea?",
+                    onConfirm: () {
+                      ActivityRepository().updateStatus(data.time!, "omitted");
+                    },
+                  );
+                });
+          }),
+        ],
       ),
     );
   }
@@ -289,7 +338,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           LeisureActivityModel item = leisureActivities[index];
           return AnimatedOpacity(
             opacity: data.status != "pending" ? 1 : 0,
-            duration: Duration(milliseconds: 500),
+            duration: const Duration(milliseconds: 500),
             child: Card(
               elevation: 2,
               shape: RoundedRectangleBorder(

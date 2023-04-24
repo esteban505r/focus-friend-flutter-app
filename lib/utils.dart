@@ -1,7 +1,11 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:focus_friend/model/calendar_history_cell_style.dart';
+import 'package:focus_friend/task_status.dart';
 import 'package:intl/intl.dart';
+
+import 'model/dto/history_item_model.dart';
 
 DateTime parseTimeString(String timeString) {
   List<String> timeParts = timeString.split(':');
@@ -14,14 +18,23 @@ DateTime parseTimeString(String timeString) {
   return time;
 }
 
+String formatTimeOfDay(TimeOfDay timeOfDay) {
+  final hour = timeOfDay.hour.toString().padLeft(2, '0');
+  final minute = timeOfDay.minute.toString().padLeft(2, '0');
+  return '$hour:$minute';
+}
+
 String parse24to12(String hour) {
   final parsedTime = DateFormat('HH:mm').parse(hour);
   return DateFormat('hh:mm a').format(parsedTime);
 }
 
+String formatYYYYMMdd(DateTime time) {
+  return "${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')}";
+}
 
 String getStatus(String? status) {
-  switch(status){
+  switch (status) {
     case "completed":
       return "Completado";
     case "omitted":
@@ -33,14 +46,77 @@ String getStatus(String? status) {
   }
 }
 
+CalendarHistoryCellStyle? getCalendarCellStyleByHistoryItemList(
+    {required DateTime date,
+    required List<HistoryItemModel> history,
+    required String status,
+    required Color backgroundColor}) {
+  final currentList = history
+      .where((element) =>
+          date.month == element.changedDateTime!.month &&
+          date.day == element.changedDateTime!.day &&
+          element.newStatus == status)
+      .toList();
+
+  if (currentList.isNotEmpty) {
+    final dayBeforeList = history.where((element) {
+      final dayBeforeDate = date.subtract(const Duration(days: 1));
+
+      return (dayBeforeDate.month == element.changedDateTime!.month &&
+          dayBeforeDate.day == element.changedDateTime!.day &&
+          element.newStatus == status);
+    });
+
+    final dayAfterList = history.where((element) {
+      final dayAfterDate = date.add(const Duration(days: 1));
+
+      return (dayAfterDate.month == element.changedDateTime!.month &&
+          dayAfterDate.day == element.changedDateTime!.day &&
+          element.newStatus == status);
+    });
+
+    if (dayBeforeList.isNotEmpty && dayAfterList.isNotEmpty ||
+        dayBeforeList.isEmpty && dayAfterList.isEmpty) {
+      return CalendarHistoryCellStyle(
+          backgroundColor: backgroundColor,
+          borderRadius: const BorderRadius.only(
+              topRight: Radius.circular(0),
+              bottomRight: Radius.circular(0),
+              bottomLeft: Radius.circular(0),
+              topLeft: Radius.circular(0)));
+    }
+
+    if (dayBeforeList.isNotEmpty) {
+      return CalendarHistoryCellStyle(
+          backgroundColor: backgroundColor,
+          borderRadius: const BorderRadius.only(
+              topRight: Radius.circular(30),
+              bottomRight: Radius.circular(30),
+              bottomLeft: Radius.circular(0),
+              topLeft: Radius.circular(0)));
+    }
+
+    if (dayAfterList.isNotEmpty) {
+      return CalendarHistoryCellStyle(
+          backgroundColor: backgroundColor,
+          borderRadius: const BorderRadius.only(
+              topRight: Radius.circular(0),
+              bottomRight: Radius.circular(0),
+              bottomLeft: Radius.circular(30),
+              topLeft: Radius.circular(30)));
+    }
+  }
+  return null;
+}
+
 Color getStatusColor(String? status) {
-  switch(status){
+  switch (status) {
     case "completed":
       return Colors.green;
     case "omitted":
-      return Colors.amber;
+      return Color(0xFFF57C00);
     case "pending":
-      return Colors.deepPurpleAccent;
+      return Color(0xFFEDB536);
     default:
       return Colors.green;
   }

@@ -11,7 +11,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../background/background.dart';
 import '../firebase_options.dart';
 import '../main.dart';
-import '../model/activity_model.dart';
+import '../model/dto/activity_model.dart';
 import '../utils.dart';
 
 const channelId = 'channelId';
@@ -74,9 +74,6 @@ Future<void> initializeNotifications() async {
 void initializeNotification() async {
   var android = const AndroidNotificationDetails(channelId, channelName,
       importance: Importance.high, priority: Priority.high);
-
-  var platform = NotificationDetails(android: android);
-
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>()

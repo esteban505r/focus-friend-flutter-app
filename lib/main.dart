@@ -8,7 +8,7 @@ import 'package:focus_friend/utils/notifications.dart';
 import 'firebase_options.dart';
 
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-FlutterLocalNotificationsPlugin();
+    FlutterLocalNotificationsPlugin();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,7 +32,10 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
           colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: Color(0xff8FBFE0), secondary: Color(0xff7F9C8D))),
+              primary: Color(0xFFF57C00),
+              secondary: Color(0xff0288D1),
+              tertiary: Color(0xFF616161),
+              background: Color(0xFFF5F5F5))),
       home: const BasePage(),
     );
   }

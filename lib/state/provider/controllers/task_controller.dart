@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../model/task_state.dart';
+import '../../state/task_state.dart';
 
 class TaskController extends StateNotifier<TaskState> {
   final TaskState taskState;

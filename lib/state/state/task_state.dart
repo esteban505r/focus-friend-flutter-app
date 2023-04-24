@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../task_status.dart';
+import '../../task_status.dart';
 
 @immutable
 class TaskState {

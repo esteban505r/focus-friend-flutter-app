@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:focus_friend/provider/home_state_provider.dart';
 import 'package:focus_friend/ui/pages/tasks_page.dart';
 
+import '../../state/provider/home_state_provider.dart';
+import 'history_page.dart';
 import 'home_page.dart';
 
 class BasePage extends ConsumerWidget {
@@ -14,13 +15,13 @@ class BasePage extends ConsumerWidget {
     final pageController = PageController(initialPage: 0);
     return Scaffold(
         bottomNavigationBar: BottomNavigationBar(
-          selectedItemColor: Color(0xff7F9C8D),
           selectedLabelStyle: TextStyle(color: Colors.black),
           showUnselectedLabels: false,
           currentIndex: currentPage,
           onTap: (index) {
             ref.read(homeStateProvider.notifier).state = index;
-           pageController.animateToPage(index, duration: Duration(milliseconds: 400), curve: Curves.easeInOut);
+            pageController.animateToPage(index,
+                duration: Duration(milliseconds: 400), curve: Curves.easeInOut);
           },
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
@@ -30,16 +31,16 @@ class BasePage extends ConsumerWidget {
                   Icons.home,
                   size: 30,
                 )),
+            BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Tareas'),
             BottomNavigationBarItem(
-                icon: Icon(Icons.task), label: 'Tareas'),
+                icon: Icon(Icons.history), label: 'Historial')
           ],
         ),
-        backgroundColor:Colors.grey.shade100,
         body: Stack(
           children: [
-            ..._createBackgroundCircles(),
+            // ..._createBackgroundCircles(),
             PageView.builder(
-              controller:pageController ,
+              controller: pageController,
               physics: NeverScrollableScrollPhysics(),
               itemBuilder: (_, index) {
                 switch (index) {
@@ -47,16 +48,17 @@ class BasePage extends ConsumerWidget {
                     return HomePage();
                   case 1:
                     return CalendarPage();
+                  case 2:
+                    return HistoryPage();
                   default:
                     return SizedBox();
                 }
               },
-              itemCount: 2,
+              itemCount: 3,
             ),
           ],
         ));
   }
-
 
   List<Widget> _createBackgroundCircles() {
     return <Widget>[
@@ -70,26 +72,26 @@ class BasePage extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(200),
                 color: const Color(0xFFEF9A53),
               ))),
-      Positioned(
-          bottom: -50,
-          left: -50,
-          child: Container(
-              height: 120,
-              width: 120,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(200),
-                color: const Color(0xFFFDF7C3),
-              ))),
-      Positioned(
-          bottom: -50,
-          right: -50,
-          child: Container(
-              height: 150,
-              width: 150,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(200),
-                color: const Color(0xFFB2A4FF),
-              ))),
+      // Positioned(
+      //     bottom: -50,
+      //     left: -50,
+      //     child: Container(
+      //         height: 120,
+      //         width: 120,
+      //         decoration: BoxDecoration(
+      //           borderRadius: BorderRadius.circular(200),
+      //           color: const Color(0xFFFDF7C3),
+      //         ))),
+      // Positioned(
+      //     bottom: -50,
+      //     right: -50,
+      //     child: Container(
+      //         height: 150,
+      //         width: 150,
+      //         decoration: BoxDecoration(
+      //           borderRadius: BorderRadius.circular(200),
+      //           color: const Color(0xFFB2A4FF),
+      //         ))),
       Positioned(
           bottom: 200,
           right: 20,
