@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:focus_friend/model/dto/activity_model.dart';
 import 'package:focus_friend/model/dto/history_item_model.dart';
@@ -17,8 +18,12 @@ class ActivityRepository {
   }
 
   Future<void> updateStatus(String hour, String status) async {
-    DatabaseReference objectsRef =
-        FirebaseDatabase.instance.ref().child("activities");
+    final currentUser = FirebaseAuth.instance.currentUser;
+    DatabaseReference objectsRef = FirebaseDatabase.instance
+        .ref()
+        .child('usuarios')
+        .child(currentUser!.uid)
+        .child("activities");
     Query query = objectsRef.orderByChild("time").equalTo(hour);
 
     var result = await query.once();
@@ -33,19 +38,28 @@ class ActivityRepository {
   }
 
   Future<void> addTask(ActivityModel activityModel) async {
-    DatabaseReference objectsRef =
-        FirebaseDatabase.instance.ref().child("activities");
+    final currentUser = FirebaseAuth.instance.currentUser;
+    DatabaseReference objectsRef = FirebaseDatabase.instance
+        .ref()
+        .child('usuarios')
+        .child(currentUser!.uid)
+        .child("activities");
     await objectsRef.push().set(activityModel.toJson());
     await scheduleNotifications();
   }
 
-  Stream<ActivityModel> getActivity() {
+  Stream<ActivityModel?> getActivity() {
+    final currentUser = FirebaseAuth.instance.currentUser;
     DatabaseReference ref = FirebaseDatabase.instance.ref();
-
-    return ref.child('activities').onValue.map((event) {
-      Map<dynamic, dynamic> values =
-          event.snapshot.value as Map<dynamic, dynamic>;
-      List<dynamic> filteredValues = values.values.where((activity) {
+    return ref
+        .child('usuarios')
+        .child(currentUser!.uid)
+        .child('activities')
+        .onValue
+        .map((event) {
+      Map<dynamic, dynamic>? values =
+          event.snapshot.value as Map<dynamic, dynamic>?;
+      List<dynamic>? filteredValues = values?.values.where((activity) {
         DateTime activityTime = parseTimeString(activity['time']);
         DateTime now = DateTime.now();
         return activityTime.hour <= now.hour ||
@@ -53,9 +67,9 @@ class ActivityRepository {
                 activityTime.minute <= now.minute);
       }).toList();
 
-      if (filteredValues.isNotEmpty) {
+      if (filteredValues?.isNotEmpty??false) {
         Map<Object?, Object?> latestActivity =
-            filteredValues.reduce((curr, next) {
+            filteredValues?.reduce((curr, next) {
           DateTime currTime = parseTimeString(curr['time']);
           DateTime nextTime = parseTimeString(next['time']);
 
@@ -65,18 +79,24 @@ class ActivityRepository {
         return ActivityModel.fromJson(
             "", Map<String, dynamic>.from(latestActivity));
       } else {
-        return ActivityModel();
+        return null;
       }
     });
   }
 
   Stream<List<ActivityModel>> getActivities() {
+    final currentUser = FirebaseAuth.instance.currentUser;
     DatabaseReference ref = FirebaseDatabase.instance.ref();
-    return ref.child('activities').onValue.map((event) {
-      Map<dynamic, dynamic> values =
-          event.snapshot.value as Map<dynamic, dynamic>;
+    return ref
+        .child('usuarios')
+        .child(currentUser!.uid)
+        .child('activities')
+        .onValue
+        .map((event) {
+      Map<dynamic, dynamic>? values =
+          event.snapshot.value as Map<dynamic, dynamic>?;
       List<ActivityModel> activities = [];
-      values.forEach((key, value) {
+      values?.forEach((key, value) {
         activities
             .add(ActivityModel.fromJson(key, Map<String, dynamic>.from(value)));
       });
@@ -90,8 +110,14 @@ class ActivityRepository {
   }
 
   Stream<List<LeisureActivityModel>> getLeisure() {
+    final currentUser = FirebaseAuth.instance.currentUser;
     DatabaseReference ref = FirebaseDatabase.instance.ref();
-    return ref.child('leisure').onValue.map((event) {
+    return ref
+        .child('usuarios')
+        .child(currentUser!.uid)
+        .child('leisure')
+        .onValue
+        .map((event) {
       Map<dynamic, dynamic> values =
           event.snapshot.value as Map<dynamic, dynamic>;
       List<LeisureActivityModel> activities = [];
@@ -105,15 +131,20 @@ class ActivityRepository {
   }
 
   Future<void> deleteTask(String id) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
     DatabaseReference ref = FirebaseDatabase.instance.ref();
-    await ref.child('activities').child(id).remove();
+    await ref.child('usuarios')
+        .child(currentUser!.uid).child('activities').child(id).remove();
     await scheduleNotifications();
   }
 
   Future<void> editTask(ActivityModel activityModel) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
     DatabaseReference ref = FirebaseDatabase.instance.ref();
     if (activityModel.id != null) {
       await ref
+          .child('usuarios')
+          .child(currentUser!.uid)
           .child('activities')
           .child(activityModel.id!)
           .set(activityModel.toJson());
@@ -121,10 +152,13 @@ class ActivityRepository {
     }
   }
 
-  Future<List<HistoryItemModel>> getActivityHistoryByMonthAndYear(
-      String id, {required int month, required int year}) async {
+  Future<List<HistoryItemModel>> getActivityHistoryByMonthAndYear(String id,
+      {required int month, required int year}) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
     final databaseRef = FirebaseDatabase.instance.ref();
     final historyRef = databaseRef
+        .child('usuarios')
+        .child(currentUser!.uid)
         .child('history')
         .child(year.toString())
         .child(month.toString());
@@ -136,14 +170,15 @@ class ActivityRepository {
           event.snapshot.value as Map<dynamic, dynamic>;
       values.forEach((dayKey, dayValue) {
         dayValue.forEach((historyKey, historyValue) {
-          if(historyKey==id){
-            activityHistory.add(HistoryItemModel.fromJson(Map<String, dynamic>.from(historyValue)));
+          if (historyKey == id) {
+            activityHistory.add(HistoryItemModel.fromJson(
+                Map<String, dynamic>.from(historyValue)));
           }
         });
       });
     }
-    activityHistory.sort((a,b)=>a.changedDateTime!.day.compareTo(b.changedDateTime!.day));
-
+    activityHistory.sort(
+        (a, b) => a.changedDateTime!.day.compareTo(b.changedDateTime!.day));
 
     return activityHistory;
   }
@@ -152,8 +187,11 @@ class ActivityRepository {
     String id,
     String status,
   ) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
     DatabaseReference objectsRef = FirebaseDatabase.instance
         .ref()
+        .child('usuarios')
+        .child(currentUser!.uid)
         .child('history')
         .child(DateTime.now().year.toString())
         .child(DateTime.now().month.toString())

@@ -2,26 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_friend/ui/pages/tasks_page.dart';
 
+import '../../controllers/login_controller.dart';
+import '../../state/provider/controllers/login_provider.dart';
 import '../../state/provider/home_state_provider.dart';
 import 'history_page.dart';
 import 'home_page.dart';
 
-class BasePage extends ConsumerWidget {
-  const BasePage({Key? key}) : super(key: key);
+class MainPage extends ConsumerWidget {
+  const MainPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentPage = ref.watch(homeStateProvider);
     final pageController = PageController(initialPage: 0);
+    LoginController loginController =
+    ref.read(loginControllerProvider.notifier);
     return Scaffold(
+        drawer:  NavigationDrawer(
+          children: [
+            ListTile(
+              title: Text("Cerrar sesion"),
+              onTap: () async {
+                await loginController.logOut();
+              },
+            )
+          ],
+        ),
         bottomNavigationBar: BottomNavigationBar(
-          selectedLabelStyle: TextStyle(color: Colors.black),
+          selectedLabelStyle: const TextStyle(color: Colors.black),
           showUnselectedLabels: false,
           currentIndex: currentPage,
           onTap: (index) {
             ref.read(homeStateProvider.notifier).state = index;
             pageController.animateToPage(index,
-                duration: Duration(milliseconds: 400), curve: Curves.easeInOut);
+                duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
           },
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
@@ -41,17 +55,17 @@ class BasePage extends ConsumerWidget {
             // ..._createBackgroundCircles(),
             PageView.builder(
               controller: pageController,
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               itemBuilder: (_, index) {
                 switch (index) {
                   case 0:
-                    return HomePage();
+                    return const HomePage();
                   case 1:
-                    return CalendarPage();
+                    return const CalendarPage();
                   case 2:
-                    return HistoryPage();
+                    return const HistoryPage();
                   default:
-                    return SizedBox();
+                    return const SizedBox();
                 }
               },
               itemCount: 3,

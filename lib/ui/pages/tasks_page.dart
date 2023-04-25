@@ -17,6 +17,8 @@ class CalendarPage extends ConsumerWidget {
             SafeArea(
               child: Stack(
                 children: [
+                  if(data.isEmpty)
+                  Center(child: Text("No tienes actividades, crea una!",style: Theme.of(context).textTheme.titleLarge,)),
                   ListView.builder(
                     padding: const EdgeInsets.all(20),
                     itemBuilder: (context, index) {
