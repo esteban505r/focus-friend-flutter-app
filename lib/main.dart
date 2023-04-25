@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,7 +22,9 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  await initializeNotifications();
+  if(FirebaseAuth.instance.currentUser!=null) {
+    await initializeNotifications();
+  }
 
   runApp(const ProviderScope(
     child: MyApp(),

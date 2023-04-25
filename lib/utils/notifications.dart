@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -19,14 +20,15 @@ const channelName = 'channelName';
 const channelDescription = 'channelDescription';
 
 @pragma('vm:entry-point')
-Future<void> notificationTapBackground(NotificationResponse notificationResponse) async {
+Future<void> notificationTapBackground(
+    NotificationResponse notificationResponse) async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   updateNotification(
       notificationResponse.payload ?? '', notificationResponse.input ?? '');
-  flutterLocalNotificationsPlugin.cancel(notificationResponse.id??0);
+  flutterLocalNotificationsPlugin.cancel(notificationResponse.id ?? 0);
 }
 
 void updateNotification(String payload, String input) {
@@ -57,7 +59,7 @@ Future<void> initializeNotifications() async {
           (NotificationResponse notificationResponse) async {
     updateNotification(
         notificationResponse.payload ?? '', notificationResponse.input ?? '');
-    flutterLocalNotificationsPlugin.cancel(notificationResponse.id??0);
+    flutterLocalNotificationsPlugin.cancel(notificationResponse.id ?? 0);
   }, onDidReceiveBackgroundNotificationResponse: notificationTapBackground);
 
   tz2.initializeTimeZones();
@@ -89,8 +91,12 @@ Future<void> scheduleNotifications() async {
   const InitializationSettings initSettings =
       InitializationSettings(android: androidInitSettings);
   await localNotifications.initialize(initSettings);
-
-  final databaseReference = FirebaseDatabase.instance.ref().child('activities');
+  final currentUser = FirebaseAuth.instance.currentUser;
+  final databaseReference = FirebaseDatabase.instance
+      .ref()
+      .child('usuarios')
+      .child(currentUser!.uid)
+      .child('activities');
   DatabaseEvent event = await databaseReference.once();
 
   Map<dynamic, dynamic> values = event.snapshot.value as Map<dynamic, dynamic>;
