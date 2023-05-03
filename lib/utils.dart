@@ -33,6 +33,40 @@ String formatYYYYMMdd(DateTime time) {
   return "${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')}";
 }
 
+int getSecondsByTimeString(String time) {
+  try {
+    var date = parseTimeString(time);
+    Duration duration = date.difference(DateTime.now());
+    if (!duration.isNegative) {
+      return duration.inSeconds;
+    }
+    return 0;
+  } catch (e) {
+    return 0;
+  }
+}
+
+TimeOfDay parseTimeOfDay(String time) {
+  int hour = int.parse(time.split(':')[0]);
+  int minute = int.parse(time.split(':')[1]);
+  return TimeOfDay(hour: hour, minute: minute);
+}
+
+extension TimeOfDayExtension on TimeOfDay {
+  int compareTo(TimeOfDay other) {
+    if (hour < other.hour) return -1;
+    if (hour > other.hour) return 1;
+    if (minute < other.minute) return -1;
+    if (minute > other.minute) return 1;
+    return 0;
+  }
+}
+
+String getTimeRemaining(int secondsRemaining) {
+  final duration = Duration(seconds: secondsRemaining);
+  return '${duration.inHours.toString().padLeft(2, '0')}:${(duration.inMinutes % 60).toString().padLeft(2, '0')}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
+}
+
 String getStatus(String? status) {
   switch (status) {
     case "completed":

@@ -111,17 +111,38 @@ class _HomePageState extends ConsumerState<HomePage> {
                           child: _createCard(data),
                         ),
                         if (data.status != "pending") ...[
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 20.0),
-                            child: Text(
-                              "Tienes tiempo libre, aqui hay algunos hobbies para ti",
-                              style: GoogleFonts.nunito(fontSize: 22),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
                           leisureStream.when(
                               data: (dataLeisure) =>
-                                  _createLeisureCard(data, dataLeisure),
+                                  Column(
+                                    children: [
+
+                                      if(dataLeisure.isNotEmpty)
+                                        ...<Widget>[
+                                          _createLeisureCard(data, dataLeisure),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                bottom: 20.0),
+                                            child: Text(
+                                              "Tienes tiempo libre, aqui hay algunos hobbies para ti",
+                                              style: GoogleFonts.nunito(
+                                                  fontSize: 22),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                        ],
+                                      if(dataLeisure.isEmpty)
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              bottom: 20.0),
+                                          child: Text(
+                                            "Tienes tiempo libre!",
+                                            style: GoogleFonts.nunito(
+                                                fontSize: 22),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
                               error: (error, stacktrace) {
                                 debugPrint(error.toString());
                                 return const SizedBox.shrink();
@@ -192,7 +213,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                'Aun no tienes actividades, crea una!',
+                  'Aun no tienes actividades, crea una!',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.roboto(
                     fontSize: 23,

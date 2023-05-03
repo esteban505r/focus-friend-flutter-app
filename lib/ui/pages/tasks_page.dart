@@ -6,8 +6,8 @@ import '../../state/provider/streams/activitiesStreamProvider.dart';
 import '../task_card_widget.dart';
 import 'new_task_page.dart';
 
-class CalendarPage extends ConsumerWidget {
-  const CalendarPage({Key? key}) : super(key: key);
+class TaskPage extends ConsumerWidget {
+  const TaskPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -19,21 +19,34 @@ class CalendarPage extends ConsumerWidget {
                 children: [
                   if(data.isEmpty)
                   Center(child: Text("No tienes actividades, crea una!",style: Theme.of(context).textTheme.titleLarge,)),
-                  ListView.builder(
-                    padding: const EdgeInsets.all(20),
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: TaskCard(
-                          task: data[index],
-                          onTaskStateChanged: (state) {
-                            ActivityRepository()
-                                .updateStatus(data[index].time!, state);
-                          },
+                  Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 20.0,bottom: 20),
+                        child: Text(
+                          "Tareas",
+                          style: Theme.of(context).textTheme.headlineSmall,
                         ),
-                      );
-                    },
-                    itemCount: data.length,
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          padding: const EdgeInsets.only(bottom: 20,left: 20,right: 20),
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              child: TaskCard(
+                                task: data[index],
+                                onTaskStateChanged: (state) {
+                                  ActivityRepository()
+                                      .updateStatus(data[index].time!, state);
+                                },
+                              ),
+                            );
+                          },
+                          itemCount: data.length,
+                        ),
+                      ),
+                    ],
                   ),
                   Positioned(
                     bottom: 24,

@@ -86,7 +86,7 @@ class NewTaskPageState extends State<NewTaskPage> {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 child: Text(
-                  "Nueva Tarea",
+                  widget.activityModel != null ? "Editar Tarea" : "Nueva Tarea",
                   textAlign: TextAlign.center,
                   style: GoogleFonts.nunito(fontSize: 30),
                 )),
@@ -134,12 +134,27 @@ class NewTaskPageState extends State<NewTaskPage> {
             const SizedBox(height: 16),
             _createTextField(_endingTimeController, "Hora de finalizacion",
                 enabled: false, onClick: () async {
+              if (_timeController.text.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content:
+                        Text("Debes primero seleccionar una hora de inicio")));
+                return;
+              }
+
               TimeOfDay? time = await showTimePicker(
                   context: context,
                   initialTime: TimeOfDay.now().replacing(minute: 0));
-              if (time != null) {
-                _endingTimeController.text = formatTimeOfDay(time);
+
+              if (time != null &&
+                  time.compareTo(parseTimeOfDay(_timeController.text)) <=
+                      0) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content:
+                        Text("La hora de finalizacion debe ser mayor a la de inicio")));
+                return;
               }
+
+              _endingTimeController.text = formatTimeOfDay(time!);
             })
           ],
         ),
@@ -171,6 +186,8 @@ class NewTaskPageState extends State<NewTaskPage> {
         ));
       }
     } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
       print(e);
     } finally {
       Navigator.pop(context);

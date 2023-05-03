@@ -9,6 +9,6 @@ AutoDisposeFutureProviderFamily<List<HistoryItemModel>, String>
     historyFutureProvider = FutureProvider.autoDispose
         .family<List<HistoryItemModel>, String>((ref, id) async {
   HistoryState state = ref.read(historyControllerNotifierProvider);
-  return ActivityRepository().getActivityHistoryByMonthAndYear(id,
+  return ActivityRepository().getActivityHistoryByMonthAndYearAndId(id,
       month: state.month, year: state.year);
 });

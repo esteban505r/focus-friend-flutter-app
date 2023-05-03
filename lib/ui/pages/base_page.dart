@@ -21,6 +21,7 @@ class MainPage extends ConsumerWidget {
         drawer:  NavigationDrawer(
           children: [
             ListTile(
+              leading: Icon(Icons.logout),
               title: Text("Cerrar sesion"),
               onTap: () async {
                 await loginController.logOut();
@@ -61,7 +62,7 @@ class MainPage extends ConsumerWidget {
                   case 0:
                     return const HomePage();
                   case 1:
-                    return const CalendarPage();
+                    return const TaskPage();
                   case 2:
                     return const HistoryPage();
                   default:

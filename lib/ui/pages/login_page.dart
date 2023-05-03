@@ -84,6 +84,7 @@ class LoginPage extends ConsumerWidget {
                           height: 20,
                         ),
                         TextFormField(
+                          obscureText: true,
                           controller: _passwordController,
                           decoration: const InputDecoration(
                               border: OutlineInputBorder(),

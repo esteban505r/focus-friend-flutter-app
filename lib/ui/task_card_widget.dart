@@ -19,10 +19,10 @@ class TaskCard extends ConsumerStatefulWidget {
       : super(key: key);
 
   @override
-  _TaskCardState createState() => _TaskCardState();
+  TaskCardState createState() => TaskCardState();
 }
 
-class _TaskCardState extends ConsumerState<TaskCard> {
+class TaskCardState extends ConsumerState<TaskCard> {
   bool _isExpanded = false;
 
   @override
@@ -30,28 +30,11 @@ class _TaskCardState extends ConsumerState<TaskCard> {
     TaskController controller =
         ref.read(taskController(widget.task.id ?? '').notifier);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      controller.setSecondsRemaining(getSeconds(widget.task.time ?? ''));
+      controller
+          .setSecondsRemaining(getSecondsByTimeString(widget.task.time ?? ''));
       controller.start();
     });
     super.initState();
-  }
-
-  int getSeconds(String time) {
-    try {
-      var date = parseTimeString(time);
-      Duration duration = date.difference(DateTime.now());
-      if (!duration.isNegative) {
-        return duration.inSeconds;
-      }
-      return 0;
-    } catch (e) {
-      return 0;
-    }
-  }
-
-  String getTimeRemaining(int secondsRemaining) {
-    final duration = Duration(seconds: secondsRemaining);
-    return '${duration.inHours.toString().padLeft(2, '0')}:${(duration.inMinutes % 60).toString().padLeft(2, '0')}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
   }
 
   @override
@@ -86,52 +69,79 @@ class _TaskCardState extends ConsumerState<TaskCard> {
             ),
             subtitle: Padding(
                 padding: const EdgeInsets.only(top: 8.0),
-                child: Row(
+                child: Column(
                   children: [
-                    if (taskState.secondsRemaining > 0)
-                     ...[
-                       const Icon(
-                         Icons.watch,
-                         size: 17,
-                         color: Colors.blue,
-                       ),
-                       const SizedBox(
-                         width: 10,
-                       ),
-                       Text(
-                         getTimeRemaining(taskState.secondsRemaining),
-                         style: TextStyle(color: Colors.grey.shade800),
-                       ),
-                     ],
-                    if (taskState.secondsRemaining <= 0)
-                      Container(
-                        width: 100,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          color: getStatusColor(widget.task.status.toString()),
-                        ),
-                        child: Text(
-                          getStatus(widget.task.status.toString()),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.white,fontSize: 13),
-                        ),
-                      ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    const Icon(
-                      Icons.watch_later_outlined,
-                      size: 17,
+                    Row(
+                      children: [
+                        if (taskState.secondsRemaining > 0) ...[
+                          const Icon(
+                            Icons.watch,
+                            size: 17,
+                            color: Colors.blue,
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Text(
+                            getTimeRemaining(taskState.secondsRemaining),
+                            style: TextStyle(color: Colors.grey.shade800),
+                          ),
+                        ],
+                        if (taskState.secondsRemaining <= 0)
+                          Container(
+                            width: 100,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              color:
+                                  getStatusColor(widget.task.status.toString()),
+                            ),
+                            child: Text(
+                              getStatus(widget.task.status.toString()),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 13),
+                            ),
+                          ),
+                      ],
                     ),
                     const SizedBox(
-                      width: 5,
+                      height: 10,
                     ),
-                    Text(
-                      parse24to12(widget.task.time ?? ''),
-                      style: TextStyle(color: Colors.grey.shade800),
-                    ),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.watch_later_outlined,
+                          size: 17,
+                        ),
+                        const SizedBox(
+                          width: 5,
+                        ),
+                        Text(
+                          parse24to12(widget.task.time ?? '00:00'),
+                          style: TextStyle(color: Colors.grey.shade800),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Text(
+                            '-',
+                            style: TextStyle(color: Colors.grey.shade800),
+                          ),
+                        ),
+                        const Icon(
+                          Icons.watch_later_outlined,
+                          size: 17,
+                        ),
+                        const SizedBox(
+                          width: 5,
+                        ),
+                        Text(
+                          parse24to12(widget.task.endingTime ?? '00:00'),
+                          style: TextStyle(color: Colors.grey.shade800),
+                        ),
+                      ],
+                    )
                   ],
                 )),
             children: <Widget>[
