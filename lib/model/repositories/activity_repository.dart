@@ -5,6 +5,7 @@ import 'package:focus_friend/model/dto/activity_model.dart';
 import 'package:focus_friend/model/dto/history_day_item.dart';
 import 'package:focus_friend/model/dto/history_item_model.dart';
 import 'package:focus_friend/model/dto/leisure_activity_model.dart';
+import 'package:focus_friend/model/dto/question_model.dart';
 import 'package:focus_friend/utils.dart';
 
 import '../../task_status.dart';
@@ -169,6 +170,68 @@ class ActivityRepository {
     return activities;
   }
 
+  Future<List<QuestionModel>> getQuestions() async {
+    if (await askedToday()) {
+      return [];
+    }
+    int multiple = await lastQuestionsAskedNumber();
+    DatabaseReference ref = FirebaseDatabase.instance.ref();
+    DatabaseEvent event = await ref
+        .child('questions')
+        .orderByKey()
+        .startAt((multiple * 10).toString())
+        .endAt((multiple * 10 + 9).toString())
+        .once();
+
+    Map<dynamic, dynamic>? values = {};
+
+    if (event.snapshot.value is List<dynamic>) {
+      List<dynamic> list = event.snapshot.value as List<dynamic>;
+      List<dynamic> filtered = list.whereType<Map>().toList();
+      for(int i = 0;i<filtered.length;i++){
+        values[(filtered[i] as Map)['id']] = filtered[i];
+      }
+    } else {
+      values = event.snapshot.value as Map<dynamic, dynamic>?;
+    }
+    List<QuestionModel> questions = [];
+    values?.forEach((key, value) {
+      questions.add(QuestionModel.fromJson(Map<String, dynamic>.from(value),int.parse(key.toString())));
+    });
+    return questions;
+  }
+
+  Future<bool> askedToday() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    DatabaseReference ref = FirebaseDatabase.instance.ref();
+    DatabaseEvent event = await ref
+        .child('usuarios')
+        .child(currentUser!.uid)
+        .child('last_time_asked')
+        .once();
+
+    try {
+      DateTime dateTime = DateTime.parse(event.snapshot.value.toString());
+      return (DateTime.now().day == dateTime.day &&
+          DateTime.now().month == dateTime.month &&
+          DateTime.now().year == dateTime.year);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<int> lastQuestionsAskedNumber() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    DatabaseReference ref = FirebaseDatabase.instance.ref();
+    DatabaseEvent event = await ref
+        .child('usuarios')
+        .child(currentUser!.uid)
+        .child('last_questions_multiple_asked')
+        .once();
+    int multiple = int.parse((event.snapshot.value ?? 0).toString());
+    return multiple;
+  }
+
   Stream<List<LeisureActivityModel>> getLeisure() {
     final currentUser = FirebaseAuth.instance.currentUser;
     DatabaseReference ref = FirebaseDatabase.instance.ref();
@@ -328,5 +391,25 @@ class ActivityRepository {
     await objectsRef.set(HistoryItemModel(
             activityId: id, changedDateTime: DateTime.now(), newStatus: status)
         .toJson());
+  }
+
+  Future<void> updateLastTimeAsked() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    DatabaseReference ref = FirebaseDatabase.instance
+        .ref()
+        .child('usuarios')
+        .child(currentUser!.uid)
+        .child('last_time_asked');
+    await ref.set(DateTime.now().toIso8601String());
+  }
+
+  Future<void> updateLastQuestionsMultipleAsked(int multiple) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    DatabaseReference ref = FirebaseDatabase.instance
+        .ref()
+        .child('usuarios')
+        .child(currentUser!.uid)
+        .child('last_questions_multiple_asked');
+    await ref.set(multiple.toString());
   }
 }

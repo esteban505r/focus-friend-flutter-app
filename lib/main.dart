@@ -7,6 +7,7 @@ import 'package:focus_friend/state/provider/streams/loggedStreamProvider.dart';
 import 'package:focus_friend/ui/pages/base_page.dart';
 import 'package:focus_friend/ui/pages/home_page.dart';
 import 'package:focus_friend/ui/pages/login_page.dart';
+import 'package:focus_friend/ui/pages/questions_page.dart';
 import 'package:focus_friend/utils/notifications.dart';
 import 'package:focus_friend/utils/preferences.dart';
 
@@ -50,7 +51,7 @@ class MyApp extends ConsumerWidget {
             if(user==null){
               return LoginPage();
             }
-            return const MainPage();
+            return QuestionsPage();
           },
           error: (error, _) => const SizedBox.shrink(),
           loading: () => const CircularProgressIndicator()),
