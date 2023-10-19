@@ -53,8 +53,11 @@ class MyApp extends ConsumerWidget {
             }
             return QuestionsPage();
           },
-          error: (error, _) => const SizedBox.shrink(),
-          loading: () => const CircularProgressIndicator()),
+          error: (error, _) {
+            print(error);
+            return const SizedBox.shrink();
+          },
+          loading: () => Scaffold(body: Center(child: const CircularProgressIndicator()))),
     );
   }
 }

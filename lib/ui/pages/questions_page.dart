@@ -120,7 +120,7 @@ class QuestionsPage extends ConsumerWidget {
         error: (error, _) {
           return const Text("Error");
         },
-        loading: () => const CircularProgressIndicator());
+        loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())));
   }
 
   String? getAnswerByIndex(Answers? answers, int index) {

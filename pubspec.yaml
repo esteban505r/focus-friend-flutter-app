@@ -38,7 +38,7 @@ dependencies:
   flutter_riverpod: ^2.0.2
   firebase_core: ^2.8.0
   firebase_database: ^10.0.16
-  google_fonts: ^5.0.0
+  google_fonts: ^4.0.5
   intl: ^0.17.0
   flutter_local_notifications: ^13.0.0
   timezone: ^0.9.1
