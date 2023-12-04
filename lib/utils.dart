@@ -62,9 +62,16 @@ extension TimeOfDayExtension on TimeOfDay {
   }
 }
 
-String getTimeRemaining(int secondsRemaining) {
-  final duration = Duration(seconds: secondsRemaining);
-  return '${duration.inHours.toString().padLeft(2, '0')}:${(duration.inMinutes % 60).toString().padLeft(2, '0')}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
+String getDuration(DateTime dateTime,DateTime dateTime2) {
+  Duration difference =  dateTime2.difference(dateTime).abs();
+  if(difference.inSeconds < 60) {
+    return "00:${difference.inSeconds}";
+  }
+
+  String hours = difference.inHours.toString().padLeft(2,"0");
+  String minutes = (difference.inMinutes - difference.inHours*60).toString().padLeft(2,"0");
+  String seconds = (difference.inSeconds - difference.inMinutes*60).toString().padLeft(2,"0");
+  return "$hours:$minutes:$seconds";
 }
 
 String getStatus(String? status) {

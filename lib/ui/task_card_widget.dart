@@ -26,20 +26,9 @@ class TaskCardState extends ConsumerState<TaskCard> {
   bool _isExpanded = false;
 
   @override
-  void initState() {
-    TaskController controller =
-        ref.read(taskController(widget.task.id ?? '').notifier);
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      controller
-          .setSecondsRemaining(getSecondsByTimeString(widget.task.time ?? ''));
-      controller.start();
-    });
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final taskState = ref.watch(taskController(widget.task.id ?? ''));
+    final taskState = ref.watch(taskController);
+    final now = taskState.dateTime;
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -73,7 +62,8 @@ class TaskCardState extends ConsumerState<TaskCard> {
                   children: [
                     Row(
                       children: [
-                        if (taskState.secondsRemaining > 0) ...[
+                        if (parseTimeString(widget.task.time ?? "00:00")
+                            .isAfter(now)) ...[
                           const Icon(
                             Icons.watch,
                             size: 17,
@@ -83,11 +73,12 @@ class TaskCardState extends ConsumerState<TaskCard> {
                             width: 10,
                           ),
                           Text(
-                            getTimeRemaining(taskState.secondsRemaining),
+                            getDuration(parseTimeString(widget.task.time ?? "00:00"),now),
                             style: TextStyle(color: Colors.grey.shade800),
                           ),
                         ],
-                        if (taskState.secondsRemaining <= 0)
+                        if (parseTimeString(widget.task.time ?? "00:00")
+                            .isBefore(now))
                           Container(
                             width: 100,
                             padding: const EdgeInsets.symmetric(

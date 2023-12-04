@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_friend/model/repositories/activity_repository.dart';
+import 'package:focus_friend/state/provider/controllers/task_controller.dart';
 
 import '../../state/provider/streams/activitiesStreamProvider.dart';
 import '../task_card_widget.dart';
@@ -11,6 +12,10 @@ class TaskPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final controller = ref.read(taskController.notifier);
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      controller.start();
+    });
     final activitiesStream = ref.watch(activitiesStreamProvider);
     return activitiesStream.when(
         data: (data) =>

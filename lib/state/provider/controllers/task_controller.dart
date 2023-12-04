@@ -1,23 +1,20 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:focus_friend/state/state/tasks_state.dart';
 
 import '../../state/task_state.dart';
 
-class TaskController extends StateNotifier<TaskState> {
-  final TaskState taskState;
+class TasksController extends StateNotifier<TasksState> {
+  final TasksState taskState;
 
-  TaskController(this.taskState) : super(taskState);
+  TasksController(this.taskState) : super(taskState);
 
   Timer? _timer;
 
   void start() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (state.secondsRemaining > 0) {
-        state = state.copyWith(secondsRemaining: state.secondsRemaining - 1);
-      } else {
-        _timer?.cancel();
-      }
+      state = state.copyWith(dateTime: DateTime.now());
     });
   }
 
@@ -36,13 +33,8 @@ class TaskController extends StateNotifier<TaskState> {
     _timer?.cancel();
     super.dispose();
   }
-
-  void setSecondsRemaining(int? secondsRemaining) {
-    state = state.copyWith(secondsRemaining: secondsRemaining);
-  }
 }
 
-final taskController = StateNotifierProvider.autoDispose
-    .family<TaskController, TaskState, String>((ref, id) {
-  return TaskController(TaskState(id));
+final taskController = StateNotifierProvider.autoDispose<TasksController, TasksState>((ref) {
+  return TasksController(TasksState(dateTime:DateTime.now()));
 });
