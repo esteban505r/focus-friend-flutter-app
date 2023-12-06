@@ -46,7 +46,7 @@ class TaskModel {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['extraText'] = extraText ?? '';
     data['name'] = name ?? '';
-    data['deadline'] = deadline ?? '00:00';
+    data['deadline'] = deadline ?? '';
     data['description'] = description ?? '';
     data['image'] = image ?? '';
     data['status'] = status ?? TaskStatus.PENDING.toString();

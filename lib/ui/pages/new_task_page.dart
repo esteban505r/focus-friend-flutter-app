@@ -33,7 +33,7 @@ class NewTaskPageState extends State<NewTaskPage> {
     if (widget.taskModel != null) {
       _nameController.text = widget.taskModel?.name ?? '';
       _descriptionController.text = widget.taskModel?.description ?? '';
-      _deadlineController.text = widget.taskModel?.deadline ?? '';
+      _deadlineController.text = DateFormat.yMMMd().format(parseDateString(widget.taskModel?.deadline??""));
     }
     super.initState();
   }
@@ -128,7 +128,7 @@ class NewTaskPageState extends State<NewTaskPage> {
               DateTime? dateTime = await showDatePicker(
                 context: context,
                 firstDate: DateTime.now(),
-                initialDate: DateTime.now().add(const Duration(days: 1)),
+                initialDate: widget.taskModel==null ? DateTime.now().add(const Duration(days: 1)) : parseDateString(widget.taskModel?.deadline??""),
                 lastDate: DateTime(2199),
               );
               if (dateTime == null && context.mounted) {
@@ -157,7 +157,7 @@ class NewTaskPageState extends State<NewTaskPage> {
           status: widget.taskModel?.status ?? '',
           description: _descriptionController.text,
           name: _nameController.text,
-          deadline: _deadline,
+          deadline: _deadline?? widget.taskModel?.deadline ??"",
         );
         await ActivityRepository().editTask(taskModel);
       } else {

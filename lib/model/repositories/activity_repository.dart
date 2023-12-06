@@ -278,6 +278,17 @@ class ActivityRepository {
     await scheduleNotifications();
   }
 
+  Future<void> deleteTask(String id) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    DatabaseReference ref = FirebaseDatabase.instance.ref();
+    await ref
+        .child('usuarios')
+        .child(currentUser!.uid)
+        .child('tasks')
+        .child(id)
+        .remove();
+  }
+
   Future<void> editActivity(ActivityModel activityModel) async {
     bool isThereConflict = await checkIfActivityCanBe(activityModel);
     if (isThereConflict) {
