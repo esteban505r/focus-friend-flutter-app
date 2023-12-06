@@ -38,7 +38,7 @@ class RegisterPage extends ConsumerWidget {
                   height: 20,
                 ),
                 Text(
-                  "Focus Friend",
+                  "H&H yourself",
                   style: GoogleFonts.alegreyaSans(
                     textStyle: TextStyle(
                         fontWeight: FontWeight.bold,

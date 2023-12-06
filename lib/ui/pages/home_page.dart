@@ -83,7 +83,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       width: 20,
                     ),
                     Text(
-                      "Focus Friend",
+                      "H&H yourself",
                       style: GoogleFonts.alegreyaSans(
                         textStyle: TextStyle(
                             fontWeight: FontWeight.bold,

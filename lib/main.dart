@@ -39,7 +39,7 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isUserLogged = ref.watch(loggedStreamProvider);
     return MaterialApp(
-      title: 'Focus Friend',
+      title: 'H&H yourself',
       theme: ThemeData(
           colorScheme: Theme.of(context).colorScheme.copyWith(
               primary: const Color(0xFFF57C00),
