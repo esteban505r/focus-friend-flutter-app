@@ -213,7 +213,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  'Aun no tienes actividades, crea una!',
+                  'En este momento estas libre, distraete!',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.roboto(
                     fontSize: 23,

@@ -98,7 +98,9 @@ Future<void> scheduleNotifications() async {
       .child(currentUser!.uid)
       .child('activities');
   DatabaseEvent event = await databaseReference.once();
-
+  if(event.snapshot.value ==null){
+    return;
+  }
   Map<dynamic, dynamic> values = event.snapshot.value as Map<dynamic, dynamic>;
   List<ActivityModel> activities = [];
   values.forEach((key, value) {

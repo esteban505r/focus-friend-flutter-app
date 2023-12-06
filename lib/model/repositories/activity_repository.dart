@@ -50,6 +50,10 @@ class ActivityRepository {
       int startingCompareEnding = startingTime.compareTo(endingElementTime);
       int endingCompareStarting = endingTime.compareTo(startingElementTime);
 
+      if (activityModel.id == activities[i]?.id) {
+        continue;
+      }
+
       if (startingCompareEnding >= 0 || endingCompareStarting <= 0) {
         continue;
       }
@@ -78,99 +82,6 @@ class ActivityRepository {
     }
   }
 
-  Future<void> updateTaskStatus(String id,bool status) async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    DatabaseReference objectsRef = FirebaseDatabase.instance
-        .ref()
-        .child('usuarios')
-        .child(currentUser!.uid)
-        .child("tasks").child(id);
-
-    var result = await objectsRef.once();
-    if (result.snapshot.value != null) {
-      objectsRef.update(
-          {"status": status ? "completed" : "pending", "last_update": DateTime.now().toIso8601String()});
-    }
-  }
-
-  Future<void> addActivity(ActivityModel activityModel) async {
-    bool canBe = await checkIfActivityCanBe(activityModel);
-    if (!canBe) {
-      throw 'La actividad que deseas agregar esta en o entre el mismo horario que otra';
-    }
-    final currentUser = FirebaseAuth.instance.currentUser;
-    DatabaseReference objectsRef = FirebaseDatabase.instance
-        .ref()
-        .child('usuarios')
-        .child(currentUser!.uid)
-        .child("activities");
-    await objectsRef.push().set(activityModel.toJson());
-    await scheduleNotifications();
-  }
-
-  Future<void> addTask(TaskModel taskModel) async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    DatabaseReference objectsRef = FirebaseDatabase.instance
-        .ref()
-        .child('usuarios')
-        .child(currentUser!.uid)
-        .child("tasks");
-    await objectsRef.push().set(taskModel.toJson());
-    await scheduleNotifications();
-  }
-
-  Stream<ActivityModel?> getActivity() {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    DatabaseReference ref = FirebaseDatabase.instance.ref();
-    return ref
-        .child('usuarios')
-        .child(currentUser!.uid)
-        .child('activities')
-        .onValue
-        .map((event) {
-      Map<dynamic, dynamic>? values =
-          event.snapshot.value as Map<dynamic, dynamic>?;
-      Map<Object?, Object?>? filteredValues =
-          values?.values.firstWhere((activity) {
-        TimeOfDay startingTime = parseTimeOfDay(activity['time']);
-        TimeOfDay endingTime = parseTimeOfDay(activity['ending_time']);
-        TimeOfDay now = TimeOfDay.now();
-        return startingTime.compareTo(now) <= 0 &&
-            endingTime.compareTo(now) >= 0;
-      }, orElse: () => null);
-
-      if (filteredValues != null) {
-        return ActivityModel.fromJson(
-            "", Map<String, dynamic>.from(filteredValues));
-      }
-      return null;
-    });
-  }
-
-  Stream<List<ActivityModel>> getStreamActivities() {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    DatabaseReference ref = FirebaseDatabase.instance.ref();
-    return ref
-        .child('usuarios')
-        .child(currentUser!.uid)
-        .child('activities')
-        .onValue
-        .map((event) {
-      Map<dynamic, dynamic>? values =
-          event.snapshot.value as Map<dynamic, dynamic>?;
-      List<ActivityModel> activities = [];
-      values?.forEach((key, value) {
-        activities
-            .add(ActivityModel.fromJson(key, Map<String, dynamic>.from(value)));
-      });
-      activities.sort((a, b) {
-        DateTime dateA = parseTimeString(a.time!);
-        DateTime dateB = parseTimeString(b.time!);
-        return dateA.compareTo(dateB);
-      });
-      return activities;
-    });
-  }
 
   Stream<List<TaskModel>> getStreamTasks() {
     final currentUser = FirebaseAuth.instance.currentUser;
@@ -219,6 +130,102 @@ class ActivityRepository {
       return dateA.compareTo(dateB);
     });
     return tasks;
+  }
+  
+  Future<void> addTask(TaskModel taskModel) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    DatabaseReference objectsRef = FirebaseDatabase.instance
+        .ref()
+        .child('usuarios')
+        .child(currentUser!.uid)
+        .child("tasks");
+    await objectsRef.push().set(taskModel.toJson());
+    await scheduleNotifications();
+  }
+  
+
+  Future<void> addActivity(ActivityModel activityModel) async {
+    bool canBe = await checkIfActivityCanBe(activityModel);
+    if (!canBe) {
+      throw 'La actividad que deseas agregar esta en o entre el mismo horario que otra';
+    }
+    final currentUser = FirebaseAuth.instance.currentUser;
+    DatabaseReference objectsRef = FirebaseDatabase.instance
+        .ref()
+        .child('usuarios')
+        .child(currentUser!.uid)
+        .child("activities");
+    await objectsRef.push().set(activityModel.toJson());
+    await scheduleNotifications();
+  }
+
+  Stream<ActivityModel?> getActivity() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    DatabaseReference ref = FirebaseDatabase.instance.ref();
+    return ref
+        .child('usuarios')
+        .child(currentUser!.uid)
+        .child('activities')
+        .onValue
+        .map((event) {
+      Map<dynamic, dynamic>? values =
+          event.snapshot.value as Map<dynamic, dynamic>?;
+      Map<Object?, Object?>? filteredValues =
+          values?.values.firstWhere((activity) {
+        TimeOfDay startingTime = parseTimeOfDay(activity['time']);
+        TimeOfDay endingTime = parseTimeOfDay(activity['ending_time']);
+        TimeOfDay now = TimeOfDay.now();
+        return startingTime.compareTo(now) <= 0 &&
+            endingTime.compareTo(now) >= 0;
+      }, orElse: () => null);
+
+      if (filteredValues != null) {
+        return ActivityModel.fromJson(
+            "", Map<String, dynamic>.from(filteredValues));
+      }
+      return null;
+    });
+  }
+
+  Future<void> updateTaskStatus(String id,bool status) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    DatabaseReference objectsRef = FirebaseDatabase.instance
+        .ref()
+        .child('usuarios')
+        .child(currentUser!.uid)
+        .child("tasks").child(id);
+
+    var result = await objectsRef.once();
+    if (result.snapshot.value != null) {
+      objectsRef.update(
+          {"status": status ? "completed" : "pending", "last_update": DateTime.now().toIso8601String()});
+    }
+  }
+
+
+  Stream<List<ActivityModel>> getStreamActivities() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    DatabaseReference ref = FirebaseDatabase.instance.ref();
+    return ref
+        .child('usuarios')
+        .child(currentUser!.uid)
+        .child('activities')
+        .onValue
+        .map((event) {
+      Map<dynamic, dynamic>? values =
+          event.snapshot.value as Map<dynamic, dynamic>?;
+      List<ActivityModel> activities = [];
+      values?.forEach((key, value) {
+        activities
+            .add(ActivityModel.fromJson(key, Map<String, dynamic>.from(value)));
+      });
+      activities.sort((a, b) {
+        DateTime dateA = parseTimeString(a.time!);
+        DateTime dateB = parseTimeString(b.time!);
+        return dateA.compareTo(dateB);
+      });
+      return activities;
+    });
   }
 
   Future<List<ActivityModel>> getActivities() async {
@@ -290,8 +297,8 @@ class ActivityRepository {
   }
 
   Future<void> editActivity(ActivityModel activityModel) async {
-    bool isThereConflict = await checkIfActivityCanBe(activityModel);
-    if (isThereConflict) {
+    bool canBe = await checkIfActivityCanBe(activityModel);
+    if (!canBe) {
       throw 'La actividad que deseas editar esta en o entre el mismo horario que otra';
     }
     final currentUser = FirebaseAuth.instance.currentUser;
@@ -303,20 +310,6 @@ class ActivityRepository {
           .child('activities')
           .child(activityModel.id!)
           .set(activityModel.toJson());
-      await scheduleNotifications();
-    }
-  }
-
-  Future<void> editTask(TaskModel taskId) async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    DatabaseReference ref = FirebaseDatabase.instance.ref();
-    if (taskId.id != null) {
-      await ref
-          .child('usuarios')
-          .child(currentUser!.uid)
-          .child('tasks')
-          .child(taskId.id!)
-          .set(taskId.toJson());
       await scheduleNotifications();
     }
   }

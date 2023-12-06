@@ -159,7 +159,7 @@ class NewTaskPageState extends State<NewTaskPage> {
           name: _nameController.text,
           deadline: _deadline?? widget.taskModel?.deadline ??"",
         );
-        await ActivityRepository().editTask(taskModel);
+        //await ActivityRepository().editTask(taskModel);
       } else {
         await ActivityRepository().addTask(TaskModel(
           description: _descriptionController.text,
