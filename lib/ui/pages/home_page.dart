@@ -347,7 +347,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                               title: "Deshacer tarea completada",
                               onConfirm: () {
                                 ActivityRepository()
-                                    .updateStatus(data.time!, "pending");
+                                    .updateActivityStatus(data.time!, "pending");
                               },
                             );
                           });
@@ -437,7 +437,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     message: "Estas seguro de que completaste esta tarea?",
                     onConfirm: () {
                       ActivityRepository()
-                          .updateStatus(data.time!, "completed");
+                          .updateActivityStatus(data.time!, "completed");
                     },
                   );
                 });
@@ -450,7 +450,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     title: "Omitir tarea",
                     message: "Estas seguro de que quieres omitir esta tarea?",
                     onConfirm: () {
-                      ActivityRepository().updateStatus(data.time!, "omitted");
+                      ActivityRepository().updateActivityStatus(data.time!, "omitted");
                     },
                   );
                 });

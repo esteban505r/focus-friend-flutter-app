@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:focus_friend/ui/pages/daily_page.dart';
 import 'package:focus_friend/ui/pages/tasks_page.dart';
 
 import '../../controllers/login_controller.dart';
@@ -16,9 +17,9 @@ class MainPage extends ConsumerWidget {
     final currentPage = ref.watch(homeStateProvider);
     final pageController = PageController(initialPage: 0);
     LoginController loginController =
-    ref.read(loginControllerProvider.notifier);
+        ref.read(loginControllerProvider.notifier);
     return Scaffold(
-        drawer:  NavigationDrawer(
+        drawer: NavigationDrawer(
           children: [
             ListTile(
               leading: Icon(Icons.logout),
@@ -30,13 +31,15 @@ class MainPage extends ConsumerWidget {
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
           selectedLabelStyle: const TextStyle(color: Colors.black),
           showUnselectedLabels: false,
           currentIndex: currentPage,
           onTap: (index) {
             ref.read(homeStateProvider.notifier).state = index;
             pageController.animateToPage(index,
-                duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeInOut);
           },
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
@@ -46,7 +49,8 @@ class MainPage extends ConsumerWidget {
                   Icons.home,
                   size: 30,
                 )),
-            BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Tareas'),
+            BottomNavigationBarItem(icon: Icon(Icons.task_alt), label: 'Diarias'),
+            BottomNavigationBarItem(icon: Icon(Icons.list_sharp), label: 'Tareas'),
             BottomNavigationBarItem(
                 icon: Icon(Icons.history), label: 'Historial')
           ],
@@ -62,8 +66,10 @@ class MainPage extends ConsumerWidget {
                   case 0:
                     return const HomePage();
                   case 1:
-                    return const TaskPage();
+                    return const DailyPage();
                   case 2:
+                    return const TasksPage();
+                  case 3:
                     return const HistoryPage();
                   default:
                     return const SizedBox();

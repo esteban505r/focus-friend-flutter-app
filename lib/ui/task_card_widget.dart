@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_friend/model/dto/activity_model.dart';
 import 'package:focus_friend/model/repositories/activity_repository.dart';
-import 'package:focus_friend/ui/pages/new_task_page.dart';
+import 'package:focus_friend/ui/pages/new_activity_page.dart';
 import 'package:focus_friend/ui/widgets/confirm_dialog.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../state/provider/controllers/task_controller.dart';
@@ -228,7 +228,7 @@ class TaskCardState extends ConsumerState<TaskCard> {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => NewTaskPage(
+                                    builder: (context) => NewActivityPage(
                                           activityModel: widget.task,
                                         )));
                           },
@@ -249,7 +249,7 @@ class TaskCardState extends ConsumerState<TaskCard> {
                                     title: "Eliminar tarea",
                                     onConfirm: () {
                                       ActivityRepository()
-                                          .deleteTask(widget.task.id ?? '');
+                                          .deleteActivity(widget.task.id ?? '');
                                     },
                                   );
                                 });

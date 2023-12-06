@@ -32,7 +32,7 @@ Future<void> notificationTapBackground(
 }
 
 void updateNotification(String payload, String input) {
-  ActivityRepository().updateStatus(
+  ActivityRepository().updateActivityStatus(
       payload ?? '',
       input == 'Si'
           ? TaskStatus.COMPLETED.toString()

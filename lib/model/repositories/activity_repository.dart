@@ -5,6 +5,7 @@ import 'package:focus_friend/model/dto/activity_model.dart';
 import 'package:focus_friend/model/dto/history_day_item.dart';
 import 'package:focus_friend/model/dto/history_item_model.dart';
 import 'package:focus_friend/model/dto/leisure_activity_model.dart';
+import 'package:focus_friend/model/dto/task_model.dart';
 import 'package:focus_friend/utils.dart';
 
 import '../../task_status.dart';
@@ -57,7 +58,7 @@ class ActivityRepository {
     return true;
   }
 
-  Future<void> updateStatus(String hour, String status) async {
+  Future<void> updateActivityStatus(String hour, String status) async {
     final currentUser = FirebaseAuth.instance.currentUser;
     DatabaseReference objectsRef = FirebaseDatabase.instance
         .ref()
@@ -77,7 +78,22 @@ class ActivityRepository {
     }
   }
 
-  Future<void> addTask(ActivityModel activityModel) async {
+  Future<void> updateTaskStatus(String id,bool status) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    DatabaseReference objectsRef = FirebaseDatabase.instance
+        .ref()
+        .child('usuarios')
+        .child(currentUser!.uid)
+        .child("tasks").child(id);
+
+    var result = await objectsRef.once();
+    if (result.snapshot.value != null) {
+      objectsRef.update(
+          {"status": status ? "completed" : "pending", "last_update": DateTime.now().toIso8601String()});
+    }
+  }
+
+  Future<void> addActivity(ActivityModel activityModel) async {
     bool canBe = await checkIfActivityCanBe(activityModel);
     if (!canBe) {
       throw 'La actividad que deseas agregar esta en o entre el mismo horario que otra';
@@ -89,6 +105,17 @@ class ActivityRepository {
         .child(currentUser!.uid)
         .child("activities");
     await objectsRef.push().set(activityModel.toJson());
+    await scheduleNotifications();
+  }
+
+  Future<void> addTask(TaskModel taskModel) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    DatabaseReference objectsRef = FirebaseDatabase.instance
+        .ref()
+        .child('usuarios')
+        .child(currentUser!.uid)
+        .child("tasks");
+    await objectsRef.push().set(taskModel.toJson());
     await scheduleNotifications();
   }
 
@@ -145,6 +172,55 @@ class ActivityRepository {
     });
   }
 
+  Stream<List<TaskModel>> getStreamTasks() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    DatabaseReference ref = FirebaseDatabase.instance.ref();
+    return ref
+        .child('usuarios')
+        .child(currentUser!.uid)
+        .child('tasks')
+        .onValue
+        .map((event) {
+      Map<dynamic, dynamic>? values =
+      event.snapshot.value as Map<dynamic, dynamic>?;
+      List<TaskModel> tasks = [];
+      values?.forEach((key, value) {
+        tasks
+            .add(TaskModel.fromJson(key, Map<String, dynamic>.from(value)));
+      });
+      tasks.sort((a, b) {
+        DateTime dateA = parseDateString(a.deadline!);
+        DateTime dateB = parseDateString(b.deadline!);
+        return dateA.compareTo(dateB);
+      });
+      return tasks;
+    });
+  }
+
+  Future<List<TaskModel>> getTasks() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    DatabaseReference ref = FirebaseDatabase.instance.ref();
+    DatabaseEvent event = await ref
+        .child('usuarios')
+        .child(currentUser!.uid)
+        .child('tasks')
+        .once();
+
+    Map<dynamic, dynamic>? values =
+    event.snapshot.value as Map<dynamic, dynamic>?;
+    List<TaskModel> tasks = [];
+    values?.forEach((key, value) {
+      tasks
+          .add(TaskModel.fromJson(key, Map<String, dynamic>.from(value)));
+    });
+    tasks.sort((a, b) {
+      DateTime dateA = parseDateString(a.deadline!);
+      DateTime dateB = parseDateString(b.deadline!);
+      return dateA.compareTo(dateB);
+    });
+    return tasks;
+  }
+
   Future<List<ActivityModel>> getActivities() async {
     final currentUser = FirebaseAuth.instance.currentUser;
     DatabaseReference ref = FirebaseDatabase.instance.ref();
@@ -190,7 +266,7 @@ class ActivityRepository {
     });
   }
 
-  Future<void> deleteTask(String id) async {
+  Future<void> deleteActivity(String id) async {
     final currentUser = FirebaseAuth.instance.currentUser;
     DatabaseReference ref = FirebaseDatabase.instance.ref();
     await ref
@@ -202,7 +278,7 @@ class ActivityRepository {
     await scheduleNotifications();
   }
 
-  Future<void> editTask(ActivityModel activityModel) async {
+  Future<void> editActivity(ActivityModel activityModel) async {
     bool isThereConflict = await checkIfActivityCanBe(activityModel);
     if (isThereConflict) {
       throw 'La actividad que deseas editar esta en o entre el mismo horario que otra';
@@ -216,6 +292,20 @@ class ActivityRepository {
           .child('activities')
           .child(activityModel.id!)
           .set(activityModel.toJson());
+      await scheduleNotifications();
+    }
+  }
+
+  Future<void> editTask(TaskModel taskId) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    DatabaseReference ref = FirebaseDatabase.instance.ref();
+    if (taskId.id != null) {
+      await ref
+          .child('usuarios')
+          .child(currentUser!.uid)
+          .child('tasks')
+          .child(taskId.id!)
+          .set(taskId.toJson());
       await scheduleNotifications();
     }
   }

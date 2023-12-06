@@ -3,37 +3,36 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:focus_friend/model/dto/activity_model.dart';
-import 'package:focus_friend/model/dto/task_model.dart';
 import 'package:focus_friend/model/repositories/activity_repository.dart';
 import 'package:focus_friend/ui/widgets/custom_background.dart';
 import 'package:focus_friend/utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 
-class NewTaskPage extends StatefulWidget {
-  const NewTaskPage({Key? key, this.taskModel}) : super(key: key);
+class NewActivityPage extends StatefulWidget {
+  const NewActivityPage({Key? key, this.activityModel}) : super(key: key);
 
-  final TaskModel? taskModel;
+  final ActivityModel? activityModel;
 
   @override
-  NewTaskPageState createState() => NewTaskPageState();
+  NewActivityPageState createState() => NewActivityPageState();
 }
 
-class NewTaskPageState extends State<NewTaskPage> {
+class NewActivityPageState extends State<NewActivityPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _timeController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _deadlineController = TextEditingController();
-  String? _deadline;
+  final _endingTimeController = TextEditingController();
   File? _image;
 
   @override
   void initState() {
-    if (widget.taskModel != null) {
-      _nameController.text = widget.taskModel?.name ?? '';
-      _descriptionController.text = widget.taskModel?.description ?? '';
-      _deadlineController.text = widget.taskModel?.deadline ?? '';
+    if (widget.activityModel != null) {
+      _nameController.text = widget.activityModel?.name ?? '';
+      _timeController.text = widget.activityModel?.time ?? '';
+      _descriptionController.text = widget.activityModel?.description ?? '';
+      _endingTimeController.text = widget.activityModel?.endingTime ?? '';
     }
     super.initState();
   }
@@ -41,8 +40,9 @@ class NewTaskPageState extends State<NewTaskPage> {
   @override
   void dispose() {
     _nameController.dispose();
+    _timeController.dispose();
     _descriptionController.dispose();
-    _deadlineController.dispose();
+    _endingTimeController.dispose();
     super.dispose();
   }
 
@@ -86,7 +86,7 @@ class NewTaskPageState extends State<NewTaskPage> {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 child: Text(
-                  widget.taskModel != null ? "Editar Tarea" : "Nueva Tarea",
+                  widget.activityModel != null ? "Editar Tarea" : "Nueva Tarea",
                   textAlign: TextAlign.center,
                   style: GoogleFonts.nunito(fontSize: 30),
                 )),
@@ -120,25 +120,41 @@ class NewTaskPageState extends State<NewTaskPage> {
             const SizedBox(height: 40),
             _createTextField(_nameController, "Nombre"),
             const SizedBox(height: 16),
+            _createTextField(_timeController, "Hora", enabled: false,
+                onClick: () async {
+              TimeOfDay? time = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.now().replacing(minute: 0));
+              if (time != null) {
+                _timeController.text = formatTimeOfDay(time);
+              }
+            }),
             const SizedBox(height: 16),
             _createTextField(_descriptionController, "Descripcion"),
             const SizedBox(height: 16),
-            _createTextField(_deadlineController, "Limite de tiempo",
+            _createTextField(_endingTimeController, "Hora de finalizacion",
                 enabled: false, onClick: () async {
-              DateTime? dateTime = await showDatePicker(
-                context: context,
-                firstDate: DateTime.now(),
-                initialDate: DateTime.now().add(const Duration(days: 1)),
-                lastDate: DateTime(2199),
-              );
-              if (dateTime == null && context.mounted) {
+              if (_timeController.text.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(
-                        "La hora de finalizacion debe ser mayor a la de inicio")));
+                    content:
+                        Text("Debes primero seleccionar una hora de inicio")));
                 return;
               }
-              _deadline = dateTime!.toIso8601String();
-              _deadlineController.text = DateFormat.yMMMd().format(dateTime!);
+
+              TimeOfDay? time = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.now().replacing(minute: 0));
+
+              if (time != null &&
+                  time.compareTo(parseTimeOfDay(_timeController.text)) <=
+                      0) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content:
+                        Text("La hora de finalizacion debe ser mayor a la de inicio")));
+                return;
+              }
+
+              _endingTimeController.text = formatTimeOfDay(time!);
             })
           ],
         ),
@@ -148,23 +164,25 @@ class NewTaskPageState extends State<NewTaskPage> {
 
   Future<void> _saveData() async {
     try {
-      if (widget.taskModel != null) {
-        TaskModel taskModel = TaskModel(
-          id: widget.taskModel?.id,
-          lastUpdate: widget.taskModel?.lastUpdate ?? '',
-          image: widget.taskModel?.image ?? '',
-          extraText: widget.taskModel?.extraText ?? '',
-          status: widget.taskModel?.status ?? '',
+      if (widget.activityModel != null) {
+        ActivityModel activityModel = ActivityModel(
+          id: widget.activityModel?.id,
+          lastUpdate: widget.activityModel?.lastUpdate ?? '',
+          image: widget.activityModel?.image ?? '',
+          extraText: widget.activityModel?.extraText ?? '',
+          status: widget.activityModel?.status ?? '',
           description: _descriptionController.text,
           name: _nameController.text,
-          deadline: _deadline,
+          time: _timeController.text,
+          endingTime: _endingTimeController.text,
         );
-        await ActivityRepository().editTask(taskModel);
+        await ActivityRepository().editActivity(activityModel);
       } else {
-        await ActivityRepository().addTask(TaskModel(
+        await ActivityRepository().addActivity(ActivityModel(
           description: _descriptionController.text,
           name: _nameController.text,
-          deadline: _deadline,
+          time: _timeController.text,
+          endingTime: _endingTimeController.text,
         ));
       }
     } catch (e) {

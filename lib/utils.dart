@@ -18,6 +18,10 @@ DateTime parseTimeString(String timeString) {
   return time;
 }
 
+DateTime parseDateString(String date) {
+  return DateFormat("yyyy-MM-ddTHH:mm:ss.SSS").parse(date);
+}
+
 String formatTimeOfDay(TimeOfDay timeOfDay) {
   final hour = timeOfDay.hour.toString().padLeft(2, '0');
   final minute = timeOfDay.minute.toString().padLeft(2, '0');
@@ -27,6 +31,55 @@ String formatTimeOfDay(TimeOfDay timeOfDay) {
 String parse24to12(String hour) {
   final parsedTime = DateFormat('HH:mm').parse(hour);
   return DateFormat('hh:mm a').format(parsedTime);
+}
+
+int getDaysLeftToCompleteATask(String? date) {
+  if (date == null) {
+    return -1;
+  }
+  try {
+    DateTime dateTime = DateFormat("yyyy-MM-ddTHH:mm:ss.SSS").parse(date);
+    Duration difference = dateTime.difference(DateTime.now());
+    int daysLeft = difference.inDays;
+    if (difference.inDays == 0 && dateTime.day != DateTime.now().day) {
+      daysLeft++;
+    }
+    return daysLeft;
+  } on FormatException {
+    return -1;
+  }
+}
+
+Widget buildDaysLeft(int daysLeft) {
+  if (daysLeft == -1) {
+    return const Text("Sin límite de tiempo");
+  }
+  if (daysLeft == 1) {
+    return RichText(
+        text: const TextSpan(
+          style: TextStyle(color: Colors.grey)
+        ,children: [
+      TextSpan(text: "Queda "),
+      TextSpan(text: "1 día",style: TextStyle(color: Colors.red)),
+      TextSpan(text: " para terminar esta tarea"),
+    ]));
+  }
+  return RichText(
+      text: TextSpan(style: const TextStyle(color: Colors.grey),children: [
+    const TextSpan(text: "Quedan "),
+    TextSpan(text: "$daysLeft días",style: TextStyle(color: getDaysLeftColor(daysLeft))),
+    const TextSpan(text: " para terminar esta tarea"),
+  ]));
+}
+
+Color getDaysLeftColor(int daysLeft){
+  if(daysLeft<2){
+    return Colors.red;
+  }
+  if(daysLeft>2 && daysLeft<5){
+    return Colors.orange;
+  }
+  return Colors.green;
 }
 
 String formatYYYYMMdd(DateTime time) {
@@ -62,15 +115,19 @@ extension TimeOfDayExtension on TimeOfDay {
   }
 }
 
-String getDuration(DateTime dateTime,DateTime dateTime2) {
-  Duration difference =  dateTime2.difference(dateTime).abs();
-  if(difference.inSeconds < 60) {
+String getDuration(DateTime dateTime, DateTime dateTime2) {
+  Duration difference = dateTime2.difference(dateTime).abs();
+  if (difference.inSeconds < 60) {
     return "00:${difference.inSeconds}";
   }
 
-  String hours = difference.inHours.toString().padLeft(2,"0");
-  String minutes = (difference.inMinutes - difference.inHours*60).toString().padLeft(2,"0");
-  String seconds = (difference.inSeconds - difference.inMinutes*60).toString().padLeft(2,"0");
+  String hours = difference.inHours.toString().padLeft(2, "0");
+  String minutes = (difference.inMinutes - difference.inHours * 60)
+      .toString()
+      .padLeft(2, "0");
+  String seconds = (difference.inSeconds - difference.inMinutes * 60)
+      .toString()
+      .padLeft(2, "0");
   return "$hours:$minutes:$seconds";
 }
 
@@ -155,9 +212,9 @@ Color getStatusColor(String? status) {
     case "completed":
       return Colors.green;
     case "omitted":
-      return Color(0xFFF57C00);
+      return const Color(0xFFF57C00);
     case "pending":
-      return Color(0xFFEDB536);
+      return const Color(0xFFEDB536);
     default:
       return Colors.green;
   }
