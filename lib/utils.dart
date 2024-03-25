@@ -41,7 +41,7 @@ int getDaysLeftToCompleteATask(String? date) {
     DateTime dateTime = DateFormat("yyyy-MM-ddTHH:mm:ss.SSS").parse(date);
     Duration difference = dateTime.difference(DateTime.now());
     int daysLeft = difference.inDays;
-    if (difference.inDays == 0 && dateTime.day != DateTime.now().day) {
+    if (dateTime.day != DateTime.now().day) {
       daysLeft++;
     }
     return daysLeft;
@@ -73,7 +73,7 @@ Widget buildDaysLeft(int daysLeft) {
 }
 
 Color getDaysLeftColor(int daysLeft){
-  if(daysLeft<2){
+  if(daysLeft<=2){
     return Colors.red;
   }
   if(daysLeft>2 && daysLeft<5){

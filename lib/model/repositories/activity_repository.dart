@@ -140,7 +140,7 @@ class ActivityRepository {
         .child(currentUser!.uid)
         .child("tasks");
     await objectsRef.push().set(taskModel.toJson());
-    await scheduleNotifications();
+    await scheduleActivitiesNotifications();
   }
   
 
@@ -156,7 +156,7 @@ class ActivityRepository {
         .child(currentUser!.uid)
         .child("activities");
     await objectsRef.push().set(activityModel.toJson());
-    await scheduleNotifications();
+    await scheduleActivitiesNotifications();
   }
 
   Stream<ActivityModel?> getActivity() {
@@ -282,7 +282,7 @@ class ActivityRepository {
         .child('activities')
         .child(id)
         .remove();
-    await scheduleNotifications();
+    await scheduleActivitiesNotifications();
   }
 
   Future<void> deleteTask(String id) async {
@@ -310,7 +310,20 @@ class ActivityRepository {
           .child('activities')
           .child(activityModel.id!)
           .set(activityModel.toJson());
-      await scheduleNotifications();
+      await scheduleActivitiesNotifications();
+    }
+  }
+
+  Future<void> editTask(TaskModel taskModel) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    DatabaseReference ref = FirebaseDatabase.instance.ref();
+    if (taskModel.id != null) {
+      await ref
+          .child('usuarios')
+          .child(currentUser!.uid)
+          .child('tasks')
+          .child(taskModel.id!)
+          .set(taskModel.toJson());
     }
   }
 

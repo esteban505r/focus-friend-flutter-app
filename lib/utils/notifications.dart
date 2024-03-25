@@ -64,7 +64,7 @@ Future<void> initializeNotifications() async {
 
   tz2.initializeTimeZones();
 
-  await scheduleNotifications();
+  await scheduleActivitiesNotifications();
   Workmanager().initialize(updateNotifications);
   Workmanager().registerPeriodicTask(
     "1",
@@ -83,7 +83,7 @@ void initializeNotification() async {
           const AndroidNotificationChannel(channelId, channelName));
 }
 
-Future<void> scheduleNotifications() async {
+Future<void> scheduleActivitiesNotifications() async {
   FlutterLocalNotificationsPlugin localNotifications =
       FlutterLocalNotificationsPlugin();
   const AndroidInitializationSettings androidInitSettings =
@@ -92,12 +92,12 @@ Future<void> scheduleNotifications() async {
       InitializationSettings(android: androidInitSettings);
   await localNotifications.initialize(initSettings);
   final currentUser = FirebaseAuth.instance.currentUser;
-  final databaseReference = FirebaseDatabase.instance
+  final activitiesReference = FirebaseDatabase.instance
       .ref()
       .child('usuarios')
       .child(currentUser!.uid)
       .child('activities');
-  DatabaseEvent event = await databaseReference.once();
+  DatabaseEvent event = await activitiesReference.once();
   if(event.snapshot.value ==null){
     return;
   }
@@ -123,7 +123,6 @@ Future<void> scheduleNotifications() async {
     DateTime? dateEndingTime = activity.endingTime != null
         ? parseTimeString(activity.endingTime!)
         : null;
-    print("dateEndingTime" + dateEndingTime.toString());
     bool isAfter = date.isAfter(DateTime.now());
     AndroidNotificationDetails androidNotificationDetails =
         const AndroidNotificationDetails(

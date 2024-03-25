@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:focus_friend/model/repositories/activity_repository.dart';
 import 'package:focus_friend/state/provider/streams/tasksStreamProvider.dart';
-import 'package:focus_friend/task_status.dart';
 import 'package:focus_friend/ui/pages/new_task_page.dart';
+import 'package:focus_friend/ui/widgets/task_item_widget.dart';
 
-import '../../utils.dart';
 
 class TasksPage extends ConsumerWidget {
   const TasksPage({super.key});
@@ -37,72 +35,8 @@ class TasksPage extends ConsumerWidget {
                           child: ListView.builder(
                             itemCount: data.length,
                             itemBuilder: (context, index) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 4.0, horizontal: 16),
-                                child: Dismissible(
-                                  onDismissed: (value){
-                                    if(value == DismissDirection.endToStart){
-                                      ActivityRepository().deleteTask(
-                                          data[index].id ?? "");
-                                    }
-                                  },
-                                  confirmDismiss: (direction) async{
-                                    if(direction == DismissDirection.startToEnd){
-                                      Navigator.push(context, MaterialPageRoute(
-                                          builder: (context) => NewTaskPage(
-                                            taskModel: data[index],
-                                          )));
-                                    }
-                                    return direction == DismissDirection.endToStart;
-                                  },
-                                  key: UniqueKey(),
-                                  background: Container(
-                                    color: Colors.blue,
-                                    alignment: Alignment.centerLeft,
-                                    child: const Padding(
-                                      padding: EdgeInsets.only(left: 16.0),
-                                      child: Icon(Icons.edit,color: Colors.white,),
-                                    ),
-                                  ),
-                                  secondaryBackground: Container(
-                                    color: Colors.red,
-                                    alignment: Alignment.centerRight,
-                                    child: const Padding(
-                                      padding: EdgeInsets.only(right: 16.0),
-                                      child: Icon(Icons.delete,color: Colors.white,),
-                                    ),
-                                  ),
-                                  child: Card(
-                                    child: ListTile(
-                                      minLeadingWidth: 0,
-                                      leading: Padding(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: Checkbox(
-                                          activeColor:
-                                              Theme.of(context).primaryColor,
-                                          onChanged: (v) {
-                                            ActivityRepository().updateTaskStatus(
-                                                data[index].id ?? "", v ?? false);
-                                          },
-                                          value: TaskStatus.COMPLETED ==
-                                              TaskStatus.fromString(
-                                                  data[index].status ??
-                                                      "pending"),
-                                        ),
-                                      ),
-                                      title:
-                                          Text(data[index].name ?? "Sin nombre"),
-                                      subtitle:
-                                          TaskStatus.fromString(data[index].status??"pending") ==
-                                                  TaskStatus.COMPLETED
-                                              ? const Text("Completado",style: TextStyle(color: Colors.green),)
-                                              : buildDaysLeft(
-                                                  getDaysLeftToCompleteATask(
-                                                      data[index].deadline)),
-                                    ),
-                                  ),
-                                ),
+                              return TaskItemWidget(
+                                data[index]
                               );
                             },
                           ),

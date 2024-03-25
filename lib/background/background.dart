@@ -10,7 +10,7 @@ void updateNotifications() {
   Workmanager().executeTask((task, inputData) async {
     try{
       tz.initializeTimeZones();
-      await scheduleNotifications();
+      await scheduleActivitiesNotifications();
     }
     catch(e){
       print(e);

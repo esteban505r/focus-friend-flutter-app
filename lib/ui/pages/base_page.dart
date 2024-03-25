@@ -51,8 +51,8 @@ class MainPage extends ConsumerWidget {
                 )),
             BottomNavigationBarItem(icon: Icon(Icons.task_alt), label: 'Diarias'),
             BottomNavigationBarItem(icon: Icon(Icons.list_sharp), label: 'Tareas'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.history), label: 'Historial')
+            /*BottomNavigationBarItem(
+                icon: Icon(Icons.history), label: 'Historial')*/
           ],
         ),
         body: Stack(
@@ -75,7 +75,7 @@ class MainPage extends ConsumerWidget {
                     return const SizedBox();
                 }
               },
-              itemCount: 3,
+              itemCount: 4,
             ),
           ],
         ));
